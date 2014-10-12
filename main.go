@@ -240,7 +240,8 @@ func cleanContainers() {
 
 func main() {
 	serfAddress := flag.String("serfAddress", "127.0.0.1:7373", "Address of the serf agent to connect to")
-	//configURL := flag.String("configURL", "", "URL to the config file for direct download")
+	configURL := flag.String("configURL", "", "URL to the config file for direct download (overrides configFile)")
+	configFile := flag.String("configFile", "./config.yaml", "File to load the configuration from")
 	connectPort := flag.Int("port", 2221, "Port to connect to the docker daemon")
 	flag.Parse()
 
@@ -288,7 +289,11 @@ func main() {
 		case <-configTimer.C:
 			log.Print("Loading config...")
 
-			cfg = readConfig("./config.yaml")
+			if *configURL == "" {
+				cfg = readConfig(*configFile)
+			} else {
+				cfg = loadConfig(*configURL)
+			}
 
 			configTimer.Reset(time.Minute * 10)
 		}
