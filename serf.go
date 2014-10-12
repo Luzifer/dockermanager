@@ -15,7 +15,7 @@ type serfMasterElector struct {
 	iAmMaster     bool
 	masterState   chan bool
 	members       []memberNode
-	myName        string
+	MyName        string
 	myStart       int64
 	serfClient    *client.RPCClient
 }
@@ -102,7 +102,7 @@ func (s *serfMasterElector) doMasterElection() {
 	s.members = newMembers
 
 	sort.Sort(byStartTime(s.members))
-	newState := s.members[0].Info.Name == s.myName
+	newState := s.members[0].Info.Name == s.MyName
 	if newState != s.iAmMaster {
 		s.masterState <- newState
 	}
@@ -124,9 +124,9 @@ func (s *serfMasterElector) Run(serfAddress string) {
 	serfClient.Stream("", msgChan)
 
 	stats, _ := serfClient.Stats()
-	s.myName = stats["agent"]["name"]
+	s.MyName = stats["agent"]["name"]
 
-	defer serfClient.UserEvent("MemberQuit", s.marshal(s.myName), false)
+	defer serfClient.UserEvent("MemberQuit", s.marshal(s.MyName), false)
 
 	for {
 		select {
@@ -147,7 +147,7 @@ func (s *serfMasterElector) Run(serfAddress string) {
 		case <-tick:
 			serfClient.UserEvent("MasterElection", s.marshal(&memberInfo{
 				ConfigVersion: s.ConfigVersion,
-				Name:          s.myName,
+				Name:          s.MyName,
 				StartTime:     s.myStart,
 			}), false)
 		}
