@@ -1,0 +1,44 @@
+---
+registry:
+  hosts:
+    - ALL
+  image: registry
+  tag: latest
+  ports:
+    - container: 5000/tcp
+      local: 0.0.0.0:1010
+  environment:
+    - SETTINGS_FLAVOR=s3
+    - AWS_BUCKET=yourbucket
+    - STORAGE_PATH=/registry
+    - AWS_KEY=YOURAWSKEY
+    - AWS_SECRET=YOURAWSSECRETKEY
+    - SEARCH_BACKEND=sqlalchemy
+    - ROUTER_SLUG=registry
+    - ROUTER_PORT=1010
+
+dockerproxy:
+  hosts:
+    - ALL
+  image: 127.0.0.1:1010/dockerproxy
+  tag: latest
+  ports:
+    - container: 80/tcp
+      local: 0.0.0.0:80
+    - container: 443/tcp
+      local: 0.0.0.0:443
+
+jenkins:
+  hosts:
+    - docker01
+  image: luzifer/jenkins
+  tag: latest
+  volumes:
+    - "/home/ubuntu/data/jenkins_home:/var/jenkins_home"
+  ports:
+    - container: 8080/tcp
+      local: 0.0.0.0:1000
+  environment:
+    - ROUTER_SLUG=jenkins
+    - ROUTER_PORT=1000
+
