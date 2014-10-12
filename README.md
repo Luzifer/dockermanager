@@ -1,5 +1,7 @@
 # luzifer / dockermanager
 
+[![Gobuild Download](http://gobuild.io/badge/github.com/Luzifer/dockermanager/downloads.svg)](http://gobuild.io/github.com/Luzifer/dockermanager)
+
 The intention of this project is to have a running daemon on a [docker](https://www.docker.com/) host server which is able to realize a configuration of docker containers. For this it manages all containers and images on the docker host. This includes starting and stopping containers which are or are not defined by the configuration file.
 
 ## Missing / Planned Features
@@ -47,3 +49,7 @@ jenkins:
     - ROUTER_SLUG=jenkins
     - ROUTER_PORT=1000
 ```
+
+## Development Status
+
+Current version is marked as 0.x.x and for this it is to be considered unstable. As soon as the load balancing is implemented I will move to the 1.x.x version and the app will be stable within the major version.
