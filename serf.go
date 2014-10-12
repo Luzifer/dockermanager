@@ -140,7 +140,7 @@ func (s *serfMasterElector) Run(serfAddress string) {
 				payload := memberInfo{}
 				s.unmarshal(msg["Payload"].([]byte), &payload)
 				if s.Debug {
-					log.Printf("MasterElection: %s %s", payload.Name, payload.StartTime)
+					log.Printf("MasterElection: %s %d", payload.Name, payload.StartTime)
 				}
 				s.handleMasterElectionMessage(&payload)
 			case msg["Event"] == "user" && msg["Name"] == "MemberQuit":
@@ -159,11 +159,6 @@ func (s *serfMasterElector) Run(serfAddress string) {
 				StartTime:     s.myStart,
 			}), false)
 		}
-	}
-
-	err = serfClient.Close()
-	if err != nil {
-		log.Fatal(err)
 	}
 }
 
