@@ -19,18 +19,21 @@ var cfg *config
 
 // #### HELPERS ####
 
+// Wrapper to replace the usual error check with fatal logging
 func orFail(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
+// Wrapper to replace the usual error check with logging
 func orLog(err error) {
 	if err != nil {
 		log.Print(err)
 	}
 }
 
+// appendIfMissing adds a string to a slice when it's not present yet
 func appendIfMissing(slice []string, s string) []string {
 	for _, e := range slice {
 		if e == s {
@@ -40,6 +43,7 @@ func appendIfMissing(slice []string, s string) []string {
 	return append(slice, s)
 }
 
+// stringInSlice checks for the existence of a string in the slice
 func stringInSlice(a string, list []string) bool {
 	for _, b := range list {
 		if b == a {
@@ -55,11 +59,13 @@ func getImages(dangling bool) []docker.APIImages {
 	images, err := dockerClient.ListImages(false)
 	orFail(err)
 
+	nowSeconds := time.Now().Unix()
+
 	response := []docker.APIImages{}
 
 	for _, v := range images {
 		if dangling {
-			if len(v.RepoTags) == 1 && v.RepoTags[0] == "<none>:<none>" {
+			if len(v.RepoTags) == 1 && v.RepoTags[0] == "<none>:<none>" && (nowSeconds-v.Created) > 3600 {
 				response = append(response, v)
 			}
 		} else {
