@@ -12,6 +12,7 @@ import (
 
 var serfElector *serfMasterElector
 var actionTimer *time.Timer
+var remoteActionTimer *time.Timer
 var cleanupTimer *time.Timer
 var configTimer *time.Timer
 var dockerClient *docker.Client
@@ -268,9 +269,12 @@ func main() {
 	serfElector = newSerfMasterElector()
 	go serfElector.Run(*serfAddress)
 
-	// Create a timer but stop it immediately for later usage
+	// Create a timer for local actions
 	actionTimer = time.NewTimer(time.Second * 60)
-	actionTimer.Stop()
+
+	// Create a timer but stop it immediately for later usage in remote actions
+	remoteActionTimer = time.NewTimer(time.Second * 60)
+	remoteActionTimer.Stop()
 
 	// Cleanup is done by each node individually, not only by the master
 	cleanupTimer = time.NewTimer(time.Second * 30)
@@ -286,14 +290,14 @@ func main() {
 		case masterState := <-serfElector.MasterState:
 			if masterState {
 				// Give the program 60s before taking actions
-				actionTimer.Reset(time.Second * 60)
-				log.Print("Enabled actions")
+				remoteActionTimer.Reset(time.Second * 60)
+				log.Print("Enabled remote action scheduling")
 			} else {
-				actionTimer.Stop()
-				log.Print("Disabled actions")
+				remoteActionTimer.Stop()
+				log.Print("Disabled remote actions scheduling")
 			}
 		case <-actionTimer.C:
-			log.Print("Action-Tick!")
+			log.Print("Local Action-Tick!")
 
 			refreshImages()
 			stopUnexpectedContainers()
@@ -301,6 +305,8 @@ func main() {
 			startExpectedContainers()
 
 			actionTimer.Reset(time.Second * 300)
+		case <-remoteActionTimer.C:
+			// TODO: Implement remote action scheduling
 		case <-cleanupTimer.C:
 			log.Print("Cleanup-Tick!")
 
