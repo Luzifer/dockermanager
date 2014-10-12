@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/fsouza/go-dockerclient"
@@ -13,7 +12,9 @@ import (
 var serfElector *serfMasterElector
 var actionTimer *time.Timer
 var cleanupTimer *time.Timer
+var configTimer *time.Timer
 var dockerClient *docker.Client
+var cfg *config
 
 // #### HELPERS ####
 
@@ -64,21 +65,11 @@ func cleanDangling() {
 }
 
 func refreshImages() {
-	// TODO: Use image names and tags from configuration, saves resources
-	images := getImages(false)
-	repos := []string{}
-	for _, v := range images {
-		for _, tag := range v.RepoTags {
-			s := strings.Split(tag, ":")
-			reponame := strings.Join(s[0:len(s)-1], ":")
-			repos = appendIfMissing(repos, reponame)
-		}
-	}
-
-	for _, repo := range repos {
-		log.Printf("Refreshing repo %s...", repo)
+	for _, v := range *cfg {
+		log.Printf("Refreshing repo %s:%s...", v.Image, v.Tag)
 		err := dockerClient.PullImage(docker.PullImageOptions{
-			Repository: repo,
+			Repository: v.Image,
+			Tag:        v.Tag,
 		}, docker.AuthConfiguration{})
 		orFail(err)
 	}
@@ -101,6 +92,8 @@ func main() {
 
 	// Cleanup is done by each node individually, not only by the master
 	cleanupTimer = time.NewTimer(time.Second * 30)
+
+	configTimer = time.NewTimer(time.Second * 1)
 
 	var err error
 	dockerClient, err = docker.NewClient(fmt.Sprintf("tcp://127.0.0.1:%d", *connectPort))
@@ -131,6 +124,12 @@ func main() {
 			cleanDangling()
 
 			cleanupTimer.Reset(time.Minute * 30)
+		case <-configTimer.C:
+			log.Print("Loading config...")
+
+			cfg = readConfig("./config.yaml")
+
+			configTimer.Reset(time.Minute * 10)
 		}
 	}
 
