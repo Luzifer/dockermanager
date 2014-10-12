@@ -260,10 +260,13 @@ func cleanContainers() {
 // #### MAIN ####
 
 func main() {
-	serfAddress := flag.String("serfAddress", "127.0.0.1:7373", "Address of the serf agent to connect to")
-	configURL := flag.String("configURL", "", "URL to the config file for direct download (overrides configFile)")
+	cleanupActionInterval := flag.Int("cleanupInterval", 60, "Sleep time in minutes to wait between cleanup actions")
 	configFile := flag.String("configFile", "./config.yaml", "File to load the configuration from")
+	configLoadInterval := flag.Int("configInterval", 10, "Sleep time in minutes to wait between config reloads")
+	configURL := flag.String("configURL", "", "URL to the config file for direct download (overrides configFile)")
 	connectPort := flag.Int("port", 2221, "Port to connect to the docker daemon")
+	localActionInterval := flag.Int("localInterval", 10, "Sleep time in minutes to wait between local actions")
+	serfAddress := flag.String("serfAddress", "127.0.0.1:7373", "Address of the serf agent to connect to")
 	flag.Parse()
 
 	serfElector = newSerfMasterElector()
@@ -304,7 +307,7 @@ func main() {
 			removeDeprecatedContainers()
 			startExpectedContainers()
 
-			actionTimer.Reset(time.Second * 300)
+			actionTimer.Reset(time.Minute * time.Duration(*localActionInterval))
 		case <-remoteActionTimer.C:
 			// TODO: Implement remote action scheduling
 		case <-cleanupTimer.C:
@@ -313,7 +316,7 @@ func main() {
 			cleanContainers()
 			cleanDangling()
 
-			cleanupTimer.Reset(time.Minute * 30)
+			cleanupTimer.Reset(time.Minute * time.Duration(*cleanupActionInterval))
 		case <-configTimer.C:
 			log.Print("Loading config...")
 
@@ -323,7 +326,7 @@ func main() {
 				cfg = loadConfig(*configURL)
 			}
 
-			configTimer.Reset(time.Minute * 10)
+			configTimer.Reset(time.Minute * time.Duration(*configLoadInterval))
 		}
 	}
 
