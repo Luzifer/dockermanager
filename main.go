@@ -12,7 +12,7 @@ import (
 
 var serfElector *serfMasterElector
 var actionTimer *time.Timer
-var actionTimerChan <-chan time.Time
+var cleanupTimer *time.Timer
 var dockerClient *docker.Client
 
 // #### HELPERS ####
@@ -96,9 +96,11 @@ func main() {
 	go serfElector.Run(*serfAddress)
 
 	// Create a timer but stop it immediately for later usage
-	actionTimer := time.NewTimer(time.Second * 60)
-	actionTimerChan = actionTimer.C
+	actionTimer = time.NewTimer(time.Second * 60)
 	actionTimer.Stop()
+
+	// Cleanup is done by each node individually, not only by the master
+	cleanupTimer = time.NewTimer(time.Second * 30)
 
 	var err error
 	dockerClient, err = docker.NewClient(fmt.Sprintf("tcp://127.0.0.1:%d", *connectPort))
@@ -115,13 +117,20 @@ func main() {
 				actionTimer.Stop()
 				log.Print("Disabled actions")
 			}
-		case <-actionTimerChan:
+		case <-actionTimer.C:
 			log.Print("Action-Tick!")
+
+			//refreshImages()
+			//cleanDangling()
+
+			actionTimer.Reset(time.Second * 300)
+		case <-cleanupTimer.C:
+			log.Print("Cleanup-Tick!")
 
 			refreshImages()
 			cleanDangling()
 
-			actionTimer.Reset(time.Second * 300)
+			cleanupTimer.Reset(time.Minute * 30)
 		}
 	}
 
