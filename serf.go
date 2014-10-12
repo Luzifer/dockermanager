@@ -11,6 +11,7 @@ import (
 
 type serfMasterElector struct {
 	ConfigVersion int64
+	Debug         bool
 	MasterState   <-chan bool // Submits the current master state as soon as it changes
 	iAmMaster     bool
 	masterState   chan bool
@@ -51,6 +52,7 @@ func newSerfMasterElector() *serfMasterElector {
 	stateChan := make(chan bool, 1)
 	return &serfMasterElector{
 		ConfigVersion: 0,
+		Debug:         false,
 		MasterState:   stateChan,
 		iAmMaster:     false,
 		masterState:   stateChan,
@@ -107,7 +109,9 @@ func (s *serfMasterElector) doMasterElection() {
 		s.masterState <- newState
 	}
 	s.iAmMaster = newState
-	log.Printf("AmIMaster? %v", s.iAmMaster)
+	if s.Debug {
+		log.Printf("AmIMaster? %v", s.iAmMaster)
+	}
 }
 
 func (s *serfMasterElector) Run(serfAddress string) {
@@ -135,14 +139,18 @@ func (s *serfMasterElector) Run(serfAddress string) {
 			case msg["Event"] == "user" && msg["Name"] == "MasterElection":
 				payload := memberInfo{}
 				s.unmarshal(msg["Payload"].([]byte), &payload)
-				log.Printf("MasterElection: %s %s", payload.Name, payload.StartTime)
+				if s.Debug {
+					log.Printf("MasterElection: %s %s", payload.Name, payload.StartTime)
+				}
 				s.handleMasterElectionMessage(&payload)
 			case msg["Event"] == "user" && msg["Name"] == "MemberQuit":
 				var name string
 				s.unmarshal(msg["Payload"].([]byte), &name)
 				s.handleMemberQuitMessage(name)
 			default:
-				log.Printf("Message: %q\n", msg)
+				if s.Debug {
+					log.Printf("Message: %q\n", msg)
+				}
 			}
 		case <-tick:
 			serfClient.UserEvent("MasterElection", s.marshal(&memberInfo{
