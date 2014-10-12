@@ -60,7 +60,6 @@ func getImages(dangling bool) []docker.APIImages {
 	orFail(err)
 
 	nowSeconds := time.Now().Unix()
-
 	response := []docker.APIImages{}
 
 	for _, v := range images {
@@ -141,21 +140,25 @@ func listRunningContainers() ([]docker.APIContainers, error) {
 	return containers, err
 }
 
-func ensureContainers() {
-	// TODO: Refactor, too long.
+func getExpectedRunningNames() []string {
 	expectedRunning := []string{}
-	currentRunning, err := listRunningContainers()
-	orLog(err)
-	if err != nil {
-		return
-	}
 	for name, containerCfg := range *cfg {
 		if stringInSlice(serfElector.MyName, containerCfg.Hosts) || stringInSlice("ALL", containerCfg.Hosts) {
 			expectedRunning = append(expectedRunning, name)
 		}
 	}
+	return expectedRunning
+}
+
+func stopUnexpectedContainers() {
+	expectedRunning := getExpectedRunningNames()
 
 	// Stop containers not expected to be running
+	currentRunning, err := listRunningContainers()
+	orLog(err)
+	if err != nil {
+		return
+	}
 	for _, v := range currentRunning {
 		allowed := false
 		for _, n := range v.Names {
@@ -170,9 +173,17 @@ func ensureContainers() {
 			time.Sleep(time.Second * 5)
 		}
 	}
+}
+
+func removeDeprecatedContainers() {
+	expectedRunning := getExpectedRunningNames()
 
 	// Stop containers who are of deprecated images
-	currentRunning, _ = listRunningContainers()
+	currentRunning, err := listRunningContainers()
+	orLog(err)
+	if err != nil {
+		return
+	}
 	images := getImages(false)
 	for _, n := range expectedRunning {
 		repoName := strings.Join([]string{(*cfg)[n].Image, (*cfg)[n].Tag}, ":")
@@ -193,6 +204,7 @@ func ensureContainers() {
 				err := dockerClient.StopContainer(v.ID, 5)
 				orFail(err)
 				time.Sleep(time.Second * 5)
+
 				log.Printf("Removing deprecated container %s", v.ID)
 				dockerClient.RemoveContainer(docker.RemoveContainerOptions{
 					ID: v.ID,
@@ -200,9 +212,17 @@ func ensureContainers() {
 			}
 		}
 	}
+}
+
+func startExpectedContainers() {
+	expectedRunning := getExpectedRunningNames()
 
 	// Start expected containers
-	currentRunning, _ = listRunningContainers()
+	currentRunning, err := listRunningContainers()
+	orLog(err)
+	if err != nil {
+		return
+	}
 	runningNames := []string{}
 	for _, v := range currentRunning {
 		for _, n := range v.Names {
@@ -276,7 +296,9 @@ func main() {
 			log.Print("Action-Tick!")
 
 			refreshImages()
-			ensureContainers()
+			stopUnexpectedContainers()
+			removeDeprecatedContainers()
+			startExpectedContainers()
 
 			actionTimer.Reset(time.Second * 300)
 		case <-cleanupTimer.C:
