@@ -117,6 +117,7 @@ func bootContainer(name string, cfg containerConfig) {
 
 	hostConfig := docker.HostConfig{
 		Binds:        cfg.Volumes,
+		Links:        cfg.Links,
 		Privileged:   false,
 		PortBindings: make(map[docker.Port][]docker.PortBinding),
 	}

@@ -25,6 +25,7 @@ The configuration is written in YAML format and reloaded regulary by the daemon:
   - `hosts`: Array of hostnames (serf node names) to deploy the container to or `ALL`
   - `image`: Name of the image `registry` or `luzifer/jenkins` or `my.registry.com:5000/secret`
   - `tag`: Tag for the image, probably `latest`
+  - `links`: Links to other containers in format `othercontainername:alias`
   - `volumes`: Volume mapping in form `<localdir>:<containerdir>`
   - `ports`: Array of port configurations
     - `container`: Exported port in the container e.g. `80/tcp` or `12201/udp`
@@ -40,6 +41,8 @@ jenkins:
     - docker01
   image: luzifer/jenkins
   tag: latest
+  links:
+    - "othercontainername:alias"
   volumes:
     - "/home/ubuntu/data/jenkins_home:/var/jenkins_home"
   ports:

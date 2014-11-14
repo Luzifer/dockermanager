@@ -14,6 +14,7 @@ type containerConfig struct {
 	Environment []string     `yaml:"environment,omitempty"`
 	Hosts       []string     `yaml:"hosts"`
 	Image       string       `yaml:"image"`
+	Links       []string     `yaml:"links"`
 	Ports       []portConfig `yaml:"ports,omitempty"`
 	Tag         string       `yaml:"tag"`
 	Volumes     []string     `yaml:"volumes,omitempty"`
