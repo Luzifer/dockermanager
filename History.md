@@ -1,4 +1,10 @@
 
+0.3.0 / 2014-12-14
+==================
+
+  * Added support for CMD override
+  * Fix: Upstream API did change
+
 0.2.0 / 2014-11-14
 ==================
 
