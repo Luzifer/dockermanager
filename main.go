@@ -104,6 +104,7 @@ func bootContainer(name string, cfg containerConfig) {
 		AttachStderr: true,
 		Image:        strings.Join([]string{cfg.Image, cfg.Tag}, ":"),
 		Env:          cfg.Environment,
+		Cmd:          cfg.Command,
 	}
 	log.Printf("Creating container %s", name)
 	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{

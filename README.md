@@ -22,6 +22,7 @@ The intention of this project is to have a running daemon on a [docker](https://
 The configuration is written in YAML format and reloaded regulary by the daemon:
 
 - `container-name`: Name of the container on the host. Needs to be unique
+  - `command`: Override CMD value set by Dockerfile
   - `hosts`: Array of hostnames (serf node names) to deploy the container to or `ALL`
   - `image`: Name of the image `registry` or `luzifer/jenkins` or `my.registry.com:5000/secret`
   - `tag`: Tag for the image, probably `latest`

@@ -11,6 +11,7 @@ import (
 type config map[string]containerConfig
 
 type containerConfig struct {
+	Command     []string     `yaml:"command,omitempty"`
 	Environment []string     `yaml:"environment,omitempty"`
 	Hosts       []string     `yaml:"hosts"`
 	Image       string       `yaml:"image"`
