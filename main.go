@@ -54,6 +54,39 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
+func timeAllowed(allowedTimes []string) bool {
+	if len(allowedTimes) == 0 {
+		return true
+	}
+
+	for _, timeFrame := range allowedTimes {
+		times := strings.Split(timeFrame, "-")
+		if len(times) != 2 {
+			continue
+		}
+
+		day := time.Now().Format("2006-01-02")
+		timezone := time.Now().Format("-0700")
+
+		t1, et1 := time.Parse("2006-01-02 15:04 -0700", fmt.Sprintf("%s %s %s", day, times[0], timezone))
+		t2, et2 := time.Parse("2006-01-02 15:04 -0700", fmt.Sprintf("%s %s %s", day, times[1], timezone))
+		if et1 != nil || et2 != nil {
+			log.Printf("Timeframe '%s' is invalid. Format is HH:MM-HH:MM", timeFrame)
+			continue
+		}
+
+		if t2.Before(t1) {
+			log.Printf("Timeframe '%s' will never work. Second time has to be bigger.", timeFrame)
+		}
+
+		if t1.Before(time.Now()) && t2.After(time.Now()) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // #### DOCKER ####
 
 func getImages(dangling bool) []docker.APIImages {
@@ -202,6 +235,10 @@ func removeDeprecatedContainers() {
 		}
 		for _, v := range currentRunning {
 			if stringInSlice(fmt.Sprintf("/%s", n), v.Names) && !strings.HasPrefix(currentImageID, v.Image) && v.Image != repoName {
+				if timeAllowed((*cfg)[n].UpdateTimes) == false {
+					log.Printf("Image %s has update but container %s is not allowed to update now.", v.Image, v.ID)
+					continue
+				}
 				log.Printf("Image: %s Current: %s", v.Image, currentImageID)
 				log.Printf("Stopping deprecated container %s", v.ID)
 				err := dockerClient.StopContainer(v.ID, 5)

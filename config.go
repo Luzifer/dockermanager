@@ -18,6 +18,7 @@ type containerConfig struct {
 	Links       []string     `yaml:"links"`
 	Ports       []portConfig `yaml:"ports,omitempty"`
 	Tag         string       `yaml:"tag"`
+	UpdateTimes []string     `yaml:"update_times,omitempty"`
 	Volumes     []string     `yaml:"volumes,omitempty"`
 }
 

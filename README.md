@@ -32,6 +32,7 @@ The configuration is written in YAML format and reloaded regulary by the daemon:
     - `container`: Exported port in the container e.g. `80/tcp` or `12201/udp`
     - `local`: IP/port combination in the form `<ip>:<port>`
   - `environment`: Array of enviroment variables in form `<key>=<value>`
+  - `update_times`: Array of allowed time frames for updates of this container in format `HH:MM-HH:MM` (Optional, if not specified container is allowed to get updated all the time.)
 
 Example configuration for a jenkins container:
 
@@ -52,6 +53,8 @@ jenkins:
   environment:
     - ROUTER_SLUG=jenkins
     - ROUTER_PORT=1000
+  update_times:
+    - 04:00-06:00
 ```
 
 ## Development Status
