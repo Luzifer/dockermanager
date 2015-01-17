@@ -1,4 +1,9 @@
 
+0.4.1 / 2015-01-17
+==================
+
+  * Fix: Latest upstream version of library broke compatibility
+
 0.4.0 / 2015-01-17
 ==================
 
