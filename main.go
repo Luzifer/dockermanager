@@ -90,7 +90,9 @@ func timeAllowed(allowedTimes []string) bool {
 // #### DOCKER ####
 
 func getImages(dangling bool) []docker.APIImages {
-	images, err := dockerClient.ListImages(false)
+	images, err := dockerClient.ListImages(docker.ListImagesOptions{
+		All: false,
+	})
 	orFail(err)
 
 	nowSeconds := time.Now().Unix()
