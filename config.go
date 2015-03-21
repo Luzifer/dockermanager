@@ -27,12 +27,13 @@ type portConfig struct {
 	Local     string `yaml:"local"`
 }
 
-func loadConfig(url string) *config {
+func loadConfig(url string) (*config, error) {
 	result := make(config)
 
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Print(err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -40,23 +41,26 @@ func loadConfig(url string) *config {
 	err = yaml.Unmarshal(body, &result)
 	if err != nil {
 		log.Print(err)
+		return nil, err
 	}
 
-	return &result
+	return &result, nil
 }
 
-func readConfig(filename string) *config {
+func readConfig(filename string) (*config, error) {
 	result := make(config)
 
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Print(err)
+		return nil, err
 	}
 
 	err = yaml.Unmarshal(body, &result)
 	if err != nil {
 		log.Print(err)
+		return nil, err
 	}
 
-	return &result
+	return &result, nil
 }

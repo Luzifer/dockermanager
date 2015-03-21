@@ -361,10 +361,14 @@ func main() {
 		case <-configTimer.C:
 			log.Print("Loading config...")
 
+			var newCfg *config
 			if *configURL == "" {
-				cfg = readConfig(*configFile)
+				newCfg, err = readConfig(*configFile)
 			} else {
-				cfg = loadConfig(*configURL)
+				newCfg, err = loadConfig(*configURL)
+			}
+			if err == nil {
+				cfg = newCfg
 			}
 
 			configTimer.Reset(time.Minute * time.Duration(*configLoadInterval))
