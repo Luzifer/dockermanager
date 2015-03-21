@@ -1,4 +1,9 @@
 
+0.4.2 / 2015-03-21
+==================
+
+  * Fix: Only load new config if it could be loaded w/o error
+
 0.4.1 / 2015-01-17
 ==================
 
