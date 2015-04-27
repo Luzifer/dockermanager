@@ -236,7 +236,10 @@ func removeDeprecatedContainers() {
 			continue
 		}
 		for _, v := range currentRunning {
-			if stringInSlice(fmt.Sprintf("/%s", n), v.Names) && !strings.HasPrefix(currentImageID, v.Image) && v.Image != repoName {
+			containerDetails, err := dockerClient.InspectContainer(v.ID)
+			orFail(err)
+
+			if stringInSlice(fmt.Sprintf("/%s", n), v.Names) && !strings.HasPrefix(currentImageID, containerDetails.Image) {
 				if timeAllowed((*cfg)[n].UpdateTimes) == false {
 					log.Printf("Image %s has update but container %s is not allowed to update now.", v.Image, v.ID)
 					continue
