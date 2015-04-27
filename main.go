@@ -254,6 +254,9 @@ func removeDeprecatedContainers() {
 				dockerClient.RemoveContainer(docker.RemoveContainerOptions{
 					ID: v.ID,
 				})
+
+				currentRunning, err = listRunningContainers()
+				orFail(err)
 			}
 		}
 	}
