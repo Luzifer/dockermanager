@@ -1,4 +1,9 @@
 
+0.4.3 / 2015-04-28
+==================
+
+  * Fix: API change did not longer return changed image ID
+
 0.4.2 / 2015-03-21
 ==================
 
