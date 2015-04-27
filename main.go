@@ -244,7 +244,7 @@ func removeDeprecatedContainers() {
 					log.Printf("Image %s has update but container %s is not allowed to update now.", v.Image, v.ID)
 					continue
 				}
-				log.Printf("Image: %s Current: %s", v.Image, currentImageID)
+				log.Printf("Image: %s Current: %s", containerDetails.Image, currentImageID)
 				log.Printf("Stopping deprecated container %s", v.ID)
 				err := dockerClient.StopContainer(v.ID, 5)
 				orFail(err)
