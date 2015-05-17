@@ -1,7 +1,5 @@
 # luzifer / dockermanager
 
-[![Gobuild Download](http://gobuild.io/badge/github.com/Luzifer/dockermanager/downloads.svg)](http://gobuild.io/github.com/Luzifer/dockermanager)
-
 The intention of this project is to have a running daemon on a [docker](https://www.docker.com/) host server which is able to realize a configuration of docker containers. For this it manages all containers and images on the docker host. This includes starting and stopping containers which are or are not defined by the configuration file.
 
 ## Missing / Planned Features
@@ -16,6 +14,7 @@ The intention of this project is to have a running daemon on a [docker](https://
 - A config file or config URL to serve the configuration from
 - Docker daemon listening on tcp port
 - The dockermanager set up
+- If you want to use images from a private registry put a `.dockercfg` file (`docker login`) to the homedir of the user running dockermanager
 
 ## Configuration
 

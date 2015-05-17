@@ -17,6 +17,7 @@ var cleanupTimer *time.Timer
 var configTimer *time.Timer
 var dockerClient *docker.Client
 var cfg *config
+var authConfig *docker.AuthConfigurations
 
 // #### HELPERS ####
 
@@ -123,11 +124,22 @@ func cleanDangling() {
 
 func refreshImages() {
 	for _, v := range *cfg {
+		auth := docker.AuthConfiguration{}
+
+		reginfo := strings.SplitN(v.Image, "/", 2)
+		if len(reginfo) == 2 {
+			for s, a := range authConfig.Configs {
+				if strings.Contains(s, fmt.Sprintf("://%s/", reginfo[0])) {
+					auth = a
+				}
+			}
+		}
+
 		log.Printf("Refreshing repo %s:%s...", v.Image, v.Tag)
 		err := dockerClient.PullImage(docker.PullImageOptions{
 			Repository: v.Image,
 			Tag:        v.Tag,
-		}, docker.AuthConfiguration{})
+		}, auth)
 		orLog(err)
 	}
 }
@@ -307,13 +319,15 @@ func cleanContainers() {
 // #### MAIN ####
 
 func main() {
-	cleanupActionInterval := flag.Int("cleanupInterval", 60, "Sleep time in minutes to wait between cleanup actions")
-	configFile := flag.String("configFile", "./config.yaml", "File to load the configuration from")
-	configLoadInterval := flag.Int("configInterval", 10, "Sleep time in minutes to wait between config reloads")
-	configURL := flag.String("configURL", "", "URL to the config file for direct download (overrides configFile)")
-	connectPort := flag.Int("port", 2221, "Port to connect to the docker daemon")
-	localActionInterval := flag.Int("localInterval", 10, "Sleep time in minutes to wait between local actions")
-	serfAddress := flag.String("serfAddress", "127.0.0.1:7373", "Address of the serf agent to connect to")
+	var (
+		cleanupActionInterval = flag.Int("cleanupInterval", 60, "Sleep time in minutes to wait between cleanup actions")
+		configFile            = flag.String("configFile", "./config.yaml", "File to load the configuration from")
+		configLoadInterval    = flag.Int("configInterval", 10, "Sleep time in minutes to wait between config reloads")
+		configURL             = flag.String("configURL", "", "URL to the config file for direct download (overrides configFile)")
+		connectPort           = flag.Int("port", 2221, "Port to connect to the docker daemon")
+		localActionInterval   = flag.Int("localInterval", 10, "Sleep time in minutes to wait between local actions")
+		serfAddress           = flag.String("serfAddress", "127.0.0.1:7373", "Address of the serf agent to connect to")
+	)
 	flag.Parse()
 
 	serfElector = newSerfMasterElector()
@@ -334,6 +348,15 @@ func main() {
 	var err error
 	dockerClient, err = docker.NewClient(fmt.Sprintf("tcp://127.0.0.1:%d", *connectPort))
 	orFail(err)
+
+	// Load local .dockercfg
+	authConfig = &docker.AuthConfigurations{}
+	auth, err := docker.NewAuthConfigurationsFromDockerCfg()
+	if err == nil {
+		authConfig = auth
+	} else {
+		log.Printf("Could not read authconfig: %s\n", err)
+	}
 
 	for {
 		select {
