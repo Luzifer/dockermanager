@@ -1,4 +1,9 @@
 
+0.5.0 / 2015-05-17
+==================
+
+  * Added docker registry authentication through .docercfg file
+
 0.4.5 / 2015-04-28
 ==================
 
