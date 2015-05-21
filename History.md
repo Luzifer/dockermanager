@@ -1,4 +1,10 @@
 
+0.6.0 / 2015-05-21
+==================
+
+  * Moved to more state-enforcer like setup
+    * Breaks: -localInterval was removed and -refreshInterval introduced
+
 0.5.0 / 2015-05-17
 ==================
 
