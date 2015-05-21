@@ -1,13 +1,13 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"strings"
 	"time"
 
 	"github.com/fsouza/go-dockerclient"
+	"github.com/robfig/cron"
 )
 
 var serfElector *serfMasterElector
@@ -316,37 +316,36 @@ func cleanContainers() {
 	}
 }
 
+// #### CONFIG ####
+func reloadConfig(params *dockerManagerParams) {
+	log.Print("Loading config...")
+	var err error
+
+	var newCfg *config
+	if params.ConfigURL == "" {
+		newCfg, err = readConfig(params.ConfigFile)
+	} else {
+		newCfg, err = loadConfig(params.ConfigURL)
+	}
+	if err == nil {
+		cfg = newCfg
+	}
+}
+
 // #### MAIN ####
 
 func main() {
-	var (
-		cleanupActionInterval = flag.Int("cleanupInterval", 60, "Sleep time in minutes to wait between cleanup actions")
-		configFile            = flag.String("configFile", "./config.yaml", "File to load the configuration from")
-		configLoadInterval    = flag.Int("configInterval", 10, "Sleep time in minutes to wait between config reloads")
-		configURL             = flag.String("configURL", "", "URL to the config file for direct download (overrides configFile)")
-		connectPort           = flag.Int("port", 2221, "Port to connect to the docker daemon")
-		localActionInterval   = flag.Int("localInterval", 10, "Sleep time in minutes to wait between local actions")
-		serfAddress           = flag.String("serfAddress", "127.0.0.1:7373", "Address of the serf agent to connect to")
-	)
-	flag.Parse()
+	params := GetStartupParameters()
 
 	serfElector = newSerfMasterElector()
-	go serfElector.Run(*serfAddress)
-
-	// Create a timer for local actions
-	actionTimer = time.NewTimer(time.Second * 60)
+	go serfElector.Run(params.SerfAddress)
 
 	// Create a timer but stop it immediately for later usage in remote actions
 	remoteActionTimer = time.NewTimer(time.Second * 60)
 	remoteActionTimer.Stop()
 
-	// Cleanup is done by each node individually, not only by the master
-	cleanupTimer = time.NewTimer(time.Second * 30)
-
-	configTimer = time.NewTimer(time.Second * 1)
-
 	var err error
-	dockerClient, err = docker.NewClient(fmt.Sprintf("tcp://127.0.0.1:%d", *connectPort))
+	dockerClient, err = docker.NewClient(fmt.Sprintf("tcp://127.0.0.1:%d", params.ConnectPort))
 	orFail(err)
 
 	// Load local .dockercfg
@@ -357,6 +356,30 @@ func main() {
 	} else {
 		log.Printf("Could not read authconfig: %s\n", err)
 	}
+
+	c := cron.New()
+
+	// Refresh images
+	c.AddFunc(fmt.Sprintf("@every %dm", params.ImageRefreshInterval), func() {
+		refreshImages()
+		cleanDangling()
+	})
+
+	// State-enforcer
+	c.AddFunc("@every 1m", func() {
+		cleanContainers()
+		stopUnexpectedContainers()
+		removeDeprecatedContainers()
+		startExpectedContainers()
+	})
+
+	// Config reload
+	c.AddFunc(fmt.Sprintf("@every %dm", params.ConfigLoadInterval), func() {
+		reloadConfig(params)
+	})
+	reloadConfig(params)
+
+	c.Start()
 
 	for {
 		select {
@@ -369,38 +392,8 @@ func main() {
 				remoteActionTimer.Stop()
 				log.Print("Disabled remote actions scheduling")
 			}
-		case <-actionTimer.C:
-			log.Print("Local Action-Tick!")
-
-			refreshImages()
-			stopUnexpectedContainers()
-			removeDeprecatedContainers()
-			startExpectedContainers()
-
-			actionTimer.Reset(time.Minute * time.Duration(*localActionInterval))
 		case <-remoteActionTimer.C:
 			// TODO: Implement remote action scheduling
-		case <-cleanupTimer.C:
-			log.Print("Cleanup-Tick!")
-
-			cleanContainers()
-			cleanDangling()
-
-			cleanupTimer.Reset(time.Minute * time.Duration(*cleanupActionInterval))
-		case <-configTimer.C:
-			log.Print("Loading config...")
-
-			var newCfg *config
-			if *configURL == "" {
-				newCfg, err = readConfig(*configFile)
-			} else {
-				newCfg, err = loadConfig(*configURL)
-			}
-			if err == nil {
-				cfg = newCfg
-			}
-
-			configTimer.Reset(time.Minute * time.Duration(*configLoadInterval))
 		}
 	}
 
