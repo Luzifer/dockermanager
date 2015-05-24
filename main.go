@@ -63,6 +63,7 @@ func main() {
 
 	// Refresh images
 	c.AddFunc(fmt.Sprintf("@every %dm", params.ImageRefreshInterval), func() {
+		removeNotRequiredImages()
 		refreshImages()
 		cleanDangling()
 	})

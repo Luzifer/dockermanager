@@ -41,6 +41,30 @@ func cleanDangling() {
 	}
 }
 
+func removeNotRequiredImages() {
+	required := []string{}
+	for _, v := range *cfg {
+		required = append(required, fmt.Sprintf("%s:%s", v.Image, v.Tag))
+	}
+
+	currentImages := getImages(false)
+	for _, i := range currentImages {
+		found := false
+		for _, t := range i.RepoTags {
+			for _, r := range required {
+				if r == t {
+					found = true
+				}
+			}
+		}
+
+		if !found {
+			log.Printf("Removing not required image: %s", i.ID)
+			dockerClient.RemoveImage(i.ID)
+		}
+	}
+}
+
 func refreshImages() {
 	for _, v := range *cfg {
 		auth := docker.AuthConfiguration{}
