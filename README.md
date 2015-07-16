@@ -64,7 +64,7 @@ scheduletest:
   tag: latest
   command:
     - "http://example.com/page"
-  start_times: */2 * * * *
+  start_times: "*/2 * * * *"
 ```
 
 ## Development Status
