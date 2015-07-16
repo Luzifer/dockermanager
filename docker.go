@@ -114,8 +114,13 @@ func bootContainer(name string, cfg containerConfig) {
 			Config: newcfg,
 		})
 		orLog(err)
-		if err != nil && strings.Contains(err.Error(), "no such image") {
-			pullImage(cfg.Image, cfg.Tag)
+		if err != nil {
+			if strings.Contains(err.Error(), "no such image") {
+				pullImage(cfg.Image, cfg.Tag)
+			}
+			if strings.Contains(err.Error(), "is already in use by container") {
+				cleanContainers()
+			}
 		}
 		return err
 	}, bo)
