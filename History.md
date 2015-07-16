@@ -1,4 +1,11 @@
 
+0.8.0 / 2015-07-16
+==================
+
+  * Added cron like task scheduling
+  * Fix: On name collisions do a cleanup
+  * Fix: Pull image when not present at container start
+
 0.7.0 / 2015-05-24
 ==================
 
