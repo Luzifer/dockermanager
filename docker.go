@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/fsouza/go-dockerclient"
 )
 
@@ -67,24 +68,28 @@ func removeNotRequiredImages() {
 
 func refreshImages() {
 	for _, v := range *cfg {
-		auth := docker.AuthConfiguration{}
+		pullImage(v.Image, v.Tag)
+	}
+}
 
-		reginfo := strings.SplitN(v.Image, "/", 2)
-		if len(reginfo) == 2 {
-			for s, a := range authConfig.Configs {
-				if strings.Contains(s, fmt.Sprintf("://%s/", reginfo[0])) {
-					auth = a
-				}
+func pullImage(image, tag string) {
+	auth := docker.AuthConfiguration{}
+
+	reginfo := strings.SplitN(image, "/", 2)
+	if len(reginfo) == 2 {
+		for s, a := range authConfig.Configs {
+			if strings.Contains(s, fmt.Sprintf("://%s/", reginfo[0])) {
+				auth = a
 			}
 		}
-
-		log.Printf("Refreshing repo %s:%s...", v.Image, v.Tag)
-		err := dockerClient.PullImage(docker.PullImageOptions{
-			Repository: v.Image,
-			Tag:        v.Tag,
-		}, auth)
-		orLog(err)
 	}
+
+	log.Printf("Refreshing repo %s:%s...", image, tag)
+	err := dockerClient.PullImage(docker.PullImageOptions{
+		Repository: image,
+		Tag:        tag,
+	}, auth)
+	orLog(err)
 }
 
 func bootContainer(name string, cfg containerConfig) {
@@ -96,15 +101,24 @@ func bootContainer(name string, cfg containerConfig) {
 		Env:          cfg.Environment,
 		Cmd:          cfg.Command,
 	}
-	log.Printf("Creating container %s", name)
-	container, err := dockerClient.CreateContainer(docker.CreateContainerOptions{
-		Name:   name,
-		Config: newcfg,
-	})
-	orLog(err)
-	if err != nil {
-		return
-	}
+
+	var (
+		container *docker.Container
+		err       error
+		bo        = backoff.NewExponentialBackOff()
+	)
+	backoff.Retry(func() error {
+		log.Printf("Creating container %s", name)
+		container, err = dockerClient.CreateContainer(docker.CreateContainerOptions{
+			Name:   name,
+			Config: newcfg,
+		})
+		orLog(err)
+		if err != nil && strings.Contains(err.Error(), "no such image") {
+			pullImage(cfg.Image, cfg.Tag)
+		}
+		return err
+	}, bo)
 
 	hostConfig := docker.HostConfig{
 		Binds:        cfg.Volumes,
