@@ -10,6 +10,10 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+var (
+	lastStartContainerCall = time.Now()
+)
+
 func getImages(dangling bool) []docker.APIImages {
 	images, err := dockerClient.ListImages(docker.ListImagesOptions{
 		All: false,
@@ -102,12 +106,18 @@ func bootContainer(name string, cfg containerConfig) {
 		Cmd:          cfg.Command,
 	}
 
+	if cfg.StartTimes != "" {
+		// Prefix scheduled containers to ensure they are not killed
+		name = "sched__" + name
+	}
+
 	var (
 		container *docker.Container
 		err       error
 		bo        = backoff.NewExponentialBackOff()
 	)
-	backoff.Retry(func() error {
+	bo.MaxElapsedTime = time.Minute
+	err = backoff.Retry(func() error {
 		log.Printf("Creating container %s", name)
 		container, err = dockerClient.CreateContainer(docker.CreateContainerOptions{
 			Name:   name,
@@ -124,6 +134,11 @@ func bootContainer(name string, cfg containerConfig) {
 		}
 		return err
 	}, bo)
+
+	if err != nil {
+		log.Printf("Unable to start container '%s': %s", name, err)
+		return
+	}
 
 	hostConfig := docker.HostConfig{
 		Binds:        cfg.Volumes,
@@ -155,7 +170,7 @@ func listRunningContainers() ([]docker.APIContainers, error) {
 func getExpectedRunningNames() []string {
 	expectedRunning := []string{}
 	for name, containerCfg := range *cfg {
-		if stringInSlice(serfElector.MyName, containerCfg.Hosts) || stringInSlice("ALL", containerCfg.Hosts) {
+		if containerCfg.shouldBeRunning(serfElector.MyName) {
 			expectedRunning = append(expectedRunning, name)
 		}
 	}
@@ -174,7 +189,7 @@ func stopUnexpectedContainers() {
 	for _, v := range currentRunning {
 		allowed := false
 		for _, n := range v.Names {
-			if stringInSlice(strings.Trim(n, "/"), expectedRunning) {
+			if stringInSlice(strings.Trim(n, "/"), expectedRunning) || strings.HasPrefix(strings.Trim(n, "/"), "sched__") {
 				allowed = true
 			}
 		}
@@ -238,6 +253,7 @@ func removeDeprecatedContainers() {
 
 func startExpectedContainers() {
 	expectedRunning := getExpectedRunningNames()
+	lastStartContainerCall = time.Now()
 
 	// Start expected containers
 	currentRunning, err := listRunningContainers()

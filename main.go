@@ -69,7 +69,7 @@ func main() {
 	})
 
 	// State-enforcer
-	c.AddFunc("@every 1m", func() {
+	c.AddFunc("0 * * * * *", func() {
 		cleanContainers()
 		stopUnexpectedContainers()
 		removeDeprecatedContainers()
