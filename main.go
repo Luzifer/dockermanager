@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"time"
 
 	"github.com/fsouza/go-dockerclient"
@@ -49,7 +50,16 @@ func main() {
 	remoteActionTimer.Stop()
 
 	var err error
-	dockerClient, err = docker.NewClient(params.DockerHost)
+	if params.DockerCertDir == "" {
+		dockerClient, err = docker.NewClient(params.DockerHost)
+	} else {
+		dockerClient, err = docker.NewTLSClient(
+			params.DockerHost,
+			path.Join(params.DockerCertDir, "cert.pem"),
+			path.Join(params.DockerCertDir, "key.pem"),
+			path.Join(params.DockerCertDir, "ca.pem"),
+		)
+	}
 	orFail(err)
 
 	// Load local .dockercfg
