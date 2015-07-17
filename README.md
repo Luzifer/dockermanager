@@ -18,6 +18,20 @@ The intention of this project is to have a running daemon on a [docker](https://
 
 ## Configuration
 
+### CLI parameters
+
+```bash
+# ./dockermanager --help
+Usage of ./dockermanager:
+  -c, --config="config.yaml": Config file or URL to read the config from
+      --configInterval=10: Sleep time in minutes to wait between config reloads
+      --docker-host="tcp://127.0.0.1:2221": Connection method to the docker server
+      --refreshInterval=30: fetch new images every <N> minutes
+      --serfAddress="127.0.0.1:7373": Address of the serf agent to connect to
+```
+
+### Configuration file
+
 The configuration is written in YAML format and reloaded regulary by the daemon:
 
 - `container-name`: Name of the container on the host. Needs to be unique
