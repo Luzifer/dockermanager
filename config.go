@@ -30,7 +30,7 @@ type portConfig struct {
 	Local     string `yaml:"local"`
 }
 
-func loadConfig(url string) (*config, error) {
+func loadConfigFromURL(url string) (*config, error) {
 	result := make(config)
 
 	resp, err := http.Get(url)
@@ -50,7 +50,7 @@ func loadConfig(url string) (*config, error) {
 	return &result, nil
 }
 
-func readConfig(filename string) (*config, error) {
+func loadConfigFromFile(filename string) (*config, error) {
 	result := make(config)
 
 	body, err := ioutil.ReadFile(filename)

@@ -1,40 +1,21 @@
 package main
 
-import "flag"
+import "github.com/Luzifer/rconfig"
 
 type dockerManagerParams struct {
-	ConfigFile string
-	ConfigURL  string
+	Config string `default:"config.yaml" flag:"config,c" description:"Config file or URL to read the config from"`
 
-	ConnectPort int
-	SerfAddress string
+	DockerHost  string `default:"tcp://127.0.0.1:2221" flag:"docker-host" env:"DOCKER_HOST" description:"Connection method to the docker server"`
+	SerfAddress string `default:"127.0.0.1:7373" flag:"serfAddress" description:"Address of the serf agent to connect to"`
 
-	ConfigLoadInterval   int
-	ImageRefreshInterval int
+	ConfigLoadInterval   int `default:"10" flag:"configInterval" description:"Sleep time in minutes to wait between config reloads"`
+	ImageRefreshInterval int `default:"30" flag:"refreshInterval" description:"fetch new images every <N> minutes"`
 }
 
 func GetStartupParameters() *dockerManagerParams {
-	var (
-		configFile = flag.String("configFile", "./config.yaml", "File to load the configuration from")
-		configURL  = flag.String("configURL", "", "URL to the config file for direct download (overrides configFile)")
+	cfg := &dockerManagerParams{}
 
-		connectPort = flag.Int("port", 2221, "Port to connect to the docker daemon")
-		serfAddress = flag.String("serfAddress", "127.0.0.1:7373", "Address of the serf agent to connect to")
+	rconfig.Parse(cfg)
 
-		configLoadInterval   = flag.Int("configInterval", 10, "Sleep time in minutes to wait between config reloads")
-		imageRefreshInterval = flag.Int("refreshInterval", 30, "fetch new images every <N> minutes")
-	)
-
-	flag.Parse()
-
-	return &dockerManagerParams{
-		ConfigFile: *configFile,
-		ConfigURL:  *configURL,
-
-		ConnectPort: *connectPort,
-		SerfAddress: *serfAddress,
-
-		ConfigLoadInterval:   *configLoadInterval,
-		ImageRefreshInterval: *imageRefreshInterval,
-	}
+	return cfg
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/fsouza/go-dockerclient"
@@ -24,10 +25,11 @@ func reloadConfig(params *dockerManagerParams) {
 	var err error
 
 	var newCfg *config
-	if params.ConfigURL == "" {
-		newCfg, err = readConfig(params.ConfigFile)
+
+	if _, err := os.Stat(params.Config); err == nil {
+		newCfg, err = loadConfigFromFile(params.Config)
 	} else {
-		newCfg, err = loadConfig(params.ConfigURL)
+		newCfg, err = loadConfigFromURL(params.Config)
 	}
 	if err == nil {
 		cfg = newCfg
@@ -47,7 +49,7 @@ func main() {
 	remoteActionTimer.Stop()
 
 	var err error
-	dockerClient, err = docker.NewClient(fmt.Sprintf("tcp://127.0.0.1:%d", params.ConnectPort))
+	dockerClient, err = docker.NewClient(params.DockerHost)
 	orFail(err)
 
 	// Load local .dockercfg
