@@ -1,4 +1,12 @@
 
+0.9.0 / 2015-07-17
+==================
+
+  * Added Godeps file
+  * Improved CLI parameter parsing  
+    **Attention:** This is a breaking change, you need to adjust your commandline parameters!
+  * Fix: Lines with asterisk needs quoting
+
 0.8.0 / 2015-07-16
 ==================
 
@@ -50,7 +58,7 @@
 0.4.0 / 2015-01-17
 ==================
 
-  * Added update_times feature
+  * Added update\_times feature
 
 0.3.0 / 2014-12-14
 ==================
