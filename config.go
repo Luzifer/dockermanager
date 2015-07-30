@@ -1,6 +1,9 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,22 +16,22 @@ import (
 type config map[string]containerConfig
 
 type containerConfig struct {
-	Command     []string     `yaml:"command,omitempty"`
-	Environment []string     `yaml:"environment,omitempty"`
-	Hosts       []string     `yaml:"hosts"`
-	Image       string       `yaml:"image"`
-	Links       []string     `yaml:"links"`
-	Ports       []portConfig `yaml:"ports,omitempty"`
-	Tag         string       `yaml:"tag"`
-	UpdateTimes []string     `yaml:"update_times,omitempty"`
-	Volumes     []string     `yaml:"volumes,omitempty"`
-	StartTimes  string       `yaml:"start_times"`
-	StopTimeout uint         `yaml:"stop_timeout"`
+	Command     []string     `yaml:"command,omitempty" json:"command"`
+	Environment []string     `yaml:"environment,omitempty" json:"environment"`
+	Hosts       []string     `yaml:"hosts" json:"hosts"`
+	Image       string       `yaml:"image" json:"image"`
+	Links       []string     `yaml:"links" json:"links"`
+	Ports       []portConfig `yaml:"ports,omitempty" json:"ports"`
+	Tag         string       `yaml:"tag" json:"tag"`
+	UpdateTimes []string     `yaml:"update_times,omitempty" json:"updatetimes"`
+	Volumes     []string     `yaml:"volumes,omitempty" json:"volumes"`
+	StartTimes  string       `yaml:"start_times" json:"starttimes"`
+	StopTimeout uint         `yaml:"stop_timeout" json:"stoptimes"`
 }
 
 type portConfig struct {
-	Container string `yaml:"container"`
-	Local     string `yaml:"local"`
+	Container string `yaml:"container" json:"container"`
+	Local     string `yaml:"local" json:"local"`
 }
 
 func loadConfigFromURL(url string) (*config, error) {
@@ -97,4 +100,13 @@ func (c containerConfig) shouldBeRunning(hostname string) bool {
 
 	// If we get here, we should probably not be running.
 	return false
+}
+
+func (c containerConfig) checksum() (string, error) {
+	data, err := json.Marshal(c)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%+x", sha256.Sum256(data)), nil
 }

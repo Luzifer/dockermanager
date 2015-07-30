@@ -97,6 +97,18 @@ func pullImage(image, tag string) {
 }
 
 func bootContainer(name string, cfg containerConfig) {
+	var (
+		container *docker.Container
+		err       error
+		bo        = backoff.NewExponentialBackOff()
+	)
+
+	cs, err := cfg.checksum()
+	orFail(err)
+	if err != nil {
+		return
+	}
+
 	newcfg := &docker.Config{
 		AttachStdin:  false,
 		AttachStdout: true,
@@ -104,6 +116,9 @@ func bootContainer(name string, cfg containerConfig) {
 		Image:        strings.Join([]string{cfg.Image, cfg.Tag}, ":"),
 		Env:          cfg.Environment,
 		Cmd:          cfg.Command,
+		Labels: map[string]string{
+			"io.luzifer.dockermanager.cfghash": cs,
+		},
 	}
 
 	if cfg.StartTimes != "" {
@@ -111,11 +126,6 @@ func bootContainer(name string, cfg containerConfig) {
 		name = "sched__" + name
 	}
 
-	var (
-		container *docker.Container
-		err       error
-		bo        = backoff.NewExponentialBackOff()
-	)
 	bo.MaxElapsedTime = time.Minute
 	err = backoff.Retry(func() error {
 		log.Printf("Creating container %s", name)
@@ -228,30 +238,43 @@ func removeDeprecatedContainers() {
 			containerDetails, err := dockerClient.InspectContainer(v.ID)
 			orFail(err)
 
-			if stringInSlice(fmt.Sprintf("/%s", n), v.Names) && !strings.HasPrefix(currentImageID, containerDetails.Image) {
-				if timeAllowed((*cfg)[n].UpdateTimes) == false {
-					log.Printf("Image %s has update but container %s is not allowed to update now.", v.Image, v.ID)
-					continue
+			cs, err := (*cfg)[n].checksum()
+
+			if stringInSlice(fmt.Sprintf("/%s", n), v.Names) {
+				needsUpdate := false
+				if !strings.HasPrefix(currentImageID, containerDetails.Image) {
+					log.Printf("Container %s has a new image version.", n)
+					needsUpdate = true
+				}
+				if containerDetails.Config.Labels["io.luzifer.dockermanager.cfghash"] != cs {
+					log.Printf("Container %s has a configuration update.", n)
+					needsUpdate = true
+				}
+				if needsUpdate && !timeAllowed((*cfg)[n].UpdateTimes) {
+					log.Printf("Image %s has update but container %s (%s) is not allowed to update now.", v.Image, n, v.ID)
+					needsUpdate = false
 				}
 
-				stopWaitTime := (*cfg)[n].StopTimeout
-				if stopWaitTime == 0 {
-					stopWaitTime = 5
+				if needsUpdate {
+					stopWaitTime := (*cfg)[n].StopTimeout
+					if stopWaitTime == 0 {
+						stopWaitTime = 5
+					}
+
+					log.Printf("Image: %s Current: %s", containerDetails.Image, currentImageID)
+					log.Printf("Stopping deprecated container %s", v.ID)
+					err := dockerClient.StopContainer(v.ID, stopWaitTime)
+					orFail(err)
+					time.Sleep(time.Second * time.Duration(stopWaitTime))
+
+					log.Printf("Removing deprecated container %s", v.ID)
+					dockerClient.RemoveContainer(docker.RemoveContainerOptions{
+						ID: v.ID,
+					})
+
+					currentRunning, err = listRunningContainers()
+					orFail(err)
 				}
-
-				log.Printf("Image: %s Current: %s", containerDetails.Image, currentImageID)
-				log.Printf("Stopping deprecated container %s", v.ID)
-				err := dockerClient.StopContainer(v.ID, stopWaitTime)
-				orFail(err)
-				time.Sleep(time.Second * time.Duration(stopWaitTime))
-
-				log.Printf("Removing deprecated container %s", v.ID)
-				dockerClient.RemoveContainer(docker.RemoveContainerOptions{
-					ID: v.ID,
-				})
-
-				currentRunning, err = listRunningContainers()
-				orFail(err)
 			}
 		}
 	}
