@@ -19,6 +19,7 @@ var configTimer *time.Timer
 var dockerClient *docker.Client
 var cfg *config
 var authConfig *docker.AuthConfigurations
+var params *dockerManagerParams
 
 // #### CONFIG ####
 func reloadConfig(params *dockerManagerParams) {
@@ -40,7 +41,7 @@ func reloadConfig(params *dockerManagerParams) {
 // #### MAIN ####
 
 func main() {
-	params := GetStartupParameters()
+	params = GetStartupParameters()
 
 	serfElector = newSerfMasterElector()
 	go serfElector.Run(params.SerfAddress)

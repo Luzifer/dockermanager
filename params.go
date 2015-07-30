@@ -11,6 +11,8 @@ type dockerManagerParams struct {
 
 	ConfigLoadInterval   int `default:"10" flag:"configInterval" description:"Sleep time in minutes to wait between config reloads"`
 	ImageRefreshInterval int `default:"30" flag:"refreshInterval" description:"fetch new images every <N> minutes"`
+
+	ManageFullHost bool `default:"true" flag:"fullHost" description:"Manage all containers on host"`
 }
 
 func GetStartupParameters() *dockerManagerParams {

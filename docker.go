@@ -111,6 +111,11 @@ func bootContainer(name string, cfg containerConfig) {
 
 	labels := cfg.Labels
 	labels["io.luzifer.dockermanager.cfghash"] = cs
+	labels["io.luzifer.dockermanager.managed"] = "true"
+
+	if cfg.StartTimes != "" {
+		labels["io.luzifer.dockermanager.scheduler"] = "true"
+	}
 
 	newcfg := &docker.Config{
 		AttachStdin:  false,
@@ -120,11 +125,6 @@ func bootContainer(name string, cfg containerConfig) {
 		Env:          cfg.Environment,
 		Cmd:          cfg.Command,
 		Labels:       labels,
-	}
-
-	if cfg.StartTimes != "" {
-		// Prefix scheduled containers to ensure they are not killed
-		name = "sched__" + name
 	}
 
 	bo.MaxElapsedTime = time.Minute
@@ -199,8 +199,22 @@ func stopUnexpectedContainers() {
 	}
 	for _, v := range currentRunning {
 		allowed := false
+
+		containerDetails, err := dockerClient.InspectContainer(v.ID)
+		orFail(err)
+
+		_, isManaged := containerDetails.Config.Labels["io.luzifer.dockermanager.managed"]
+		if !params.ManageFullHost && !isManaged {
+			allowed = true
+		}
+
+		if containerDetails.Config.Labels["io.luzifer.dockermanager.scheduler"] == "true" {
+			// If it's a scheduled container keep it running
+			allowed = true
+		}
+
 		for _, n := range v.Names {
-			if stringInSlice(strings.Trim(n, "/"), expectedRunning) || strings.HasPrefix(strings.Trim(n, "/"), "sched__") {
+			if stringInSlice(strings.Trim(n, "/"), expectedRunning) {
 				allowed = true
 			}
 		}
