@@ -23,6 +23,7 @@ type containerConfig struct {
 	UpdateTimes []string     `yaml:"update_times,omitempty"`
 	Volumes     []string     `yaml:"volumes,omitempty"`
 	StartTimes  string       `yaml:"start_times"`
+	StopTimeout uint         `yaml:"stop_timeout"`
 }
 
 type portConfig struct {

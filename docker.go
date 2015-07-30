@@ -233,11 +233,17 @@ func removeDeprecatedContainers() {
 					log.Printf("Image %s has update but container %s is not allowed to update now.", v.Image, v.ID)
 					continue
 				}
+
+				stopWaitTime := (*cfg)[n].StopTimeout
+				if stopWaitTime == 0 {
+					stopWaitTime = 5
+				}
+
 				log.Printf("Image: %s Current: %s", containerDetails.Image, currentImageID)
 				log.Printf("Stopping deprecated container %s", v.ID)
-				err := dockerClient.StopContainer(v.ID, 5)
+				err := dockerClient.StopContainer(v.ID, stopWaitTime)
 				orFail(err)
-				time.Sleep(time.Second * 5)
+				time.Sleep(time.Second * time.Duration(stopWaitTime))
 
 				log.Printf("Removing deprecated container %s", v.ID)
 				dockerClient.RemoveContainer(docker.RemoveContainerOptions{
