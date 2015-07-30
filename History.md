@@ -1,4 +1,11 @@
 
+0.10.0 / 2015-07-30
+==================
+
+  * Made wait timeout on stop container configurable
+  * Allow passing docker daemon certificates
+  * Added CLI parameter to README
+
 0.9.0 / 2015-07-17
 ==================
 
