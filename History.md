@@ -1,4 +1,10 @@
 
+0.11.0 / 2015-07-31
+==================
+
+  * Support custom labels
+  * Update containers on updated config
+
 0.10.0 / 2015-07-30
 ==================
 
