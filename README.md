@@ -48,6 +48,7 @@ The configuration is written in YAML format and reloaded regulary by the daemon:
   - `update_times`: Array of allowed time frames for updates of this container in format `HH:MM-HH:MM` (Optional, if not specified container is allowed to get updated all the time.)
   - `start_times`: Cron-style time specification when to start this container. Pay attention to choose a container quitting before your specified interval for this. Containers having this specification will not get started by default and are not restarted after they quit. Use this for starting cron-like tasks.
   - `stop_timeout`: Time in seconds to wait when stopping a deprecated container to be exchanged. (default: 5s)
+  - `labels`: Labels to attach to the container (for example the config for the [DockerProxy](https://github.com/Luzifer/dockerproxy))
 
 Example configuration for a jenkins container:
 

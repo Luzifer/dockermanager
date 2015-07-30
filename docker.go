@@ -109,6 +109,9 @@ func bootContainer(name string, cfg containerConfig) {
 		return
 	}
 
+	labels := cfg.Labels
+	labels["io.luzifer.dockermanager.cfghash"] = cs
+
 	newcfg := &docker.Config{
 		AttachStdin:  false,
 		AttachStdout: true,
@@ -116,9 +119,7 @@ func bootContainer(name string, cfg containerConfig) {
 		Image:        strings.Join([]string{cfg.Image, cfg.Tag}, ":"),
 		Env:          cfg.Environment,
 		Cmd:          cfg.Command,
-		Labels: map[string]string{
-			"io.luzifer.dockermanager.cfghash": cs,
-		},
+		Labels:       labels,
 	}
 
 	if cfg.StartTimes != "" {

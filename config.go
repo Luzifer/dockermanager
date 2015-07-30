@@ -16,17 +16,18 @@ import (
 type config map[string]containerConfig
 
 type containerConfig struct {
-	Command     []string     `yaml:"command,omitempty" json:"command"`
-	Environment []string     `yaml:"environment,omitempty" json:"environment"`
-	Hosts       []string     `yaml:"hosts" json:"hosts"`
-	Image       string       `yaml:"image" json:"image"`
-	Links       []string     `yaml:"links" json:"links"`
-	Ports       []portConfig `yaml:"ports,omitempty" json:"ports"`
-	Tag         string       `yaml:"tag" json:"tag"`
-	UpdateTimes []string     `yaml:"update_times,omitempty" json:"updatetimes"`
-	Volumes     []string     `yaml:"volumes,omitempty" json:"volumes"`
-	StartTimes  string       `yaml:"start_times" json:"starttimes"`
-	StopTimeout uint         `yaml:"stop_timeout" json:"stoptimes"`
+	Command     []string          `yaml:"command,omitempty" json:"command"`
+	Environment []string          `yaml:"environment,omitempty" json:"environment"`
+	Hosts       []string          `yaml:"hosts" json:"hosts"`
+	Image       string            `yaml:"image" json:"image"`
+	Links       []string          `yaml:"links" json:"links"`
+	Ports       []portConfig      `yaml:"ports,omitempty" json:"ports"`
+	Tag         string            `yaml:"tag" json:"tag"`
+	UpdateTimes []string          `yaml:"update_times,omitempty" json:"updatetimes"`
+	Volumes     []string          `yaml:"volumes,omitempty" json:"volumes"`
+	StartTimes  string            `yaml:"start_times" json:"starttimes"`
+	StopTimeout uint              `yaml:"stop_timeout" json:"stoptimes"`
+	Labels      map[string]string `yaml:"labels" json:"labels"`
 }
 
 type portConfig struct {
