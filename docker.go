@@ -110,6 +110,9 @@ func bootContainer(name string, cfg containerConfig) {
 	}
 
 	labels := cfg.Labels
+	if labels == nil {
+		labels = map[string]string{}
+	}
 	labels["io.luzifer.dockermanager.cfghash"] = cs
 	labels["io.luzifer.dockermanager.managed"] = "true"
 
