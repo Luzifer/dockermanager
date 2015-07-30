@@ -25,7 +25,9 @@ The intention of this project is to have a running daemon on a [docker](https://
 Usage of ./dockermanager:
   -c, --config="config.yaml": Config file or URL to read the config from
       --configInterval=10: Sleep time in minutes to wait between config reloads
-      --docker-host="tcp://127.0.0.1:2221": Connection method to the docker server
+      --docker-certs="": Directory containing cert.pem, key.pem, ca.pem for the registry
+      --docker-host="tcp://192.168.59.103:2376": Connection method to the docker server
+      --fullHost[=true]: Manage all containers on host
       --refreshInterval=30: fetch new images every <N> minutes
       --serfAddress="127.0.0.1:7373": Address of the serf agent to connect to
 ```
