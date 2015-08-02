@@ -283,7 +283,6 @@ func removeDeprecatedContainers() {
 					log.Printf("Stopping deprecated container %s", v.ID)
 					err := dockerClient.StopContainer(v.ID, stopWaitTime)
 					orFail(err)
-					time.Sleep(time.Second * time.Duration(stopWaitTime))
 
 					log.Printf("Removing deprecated container %s", v.ID)
 					dockerClient.RemoveContainer(docker.RemoveContainerOptions{
