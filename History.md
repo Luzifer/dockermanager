@@ -1,4 +1,10 @@
 
+0.12.2 / 2015-08-02
+==================
+
+  * Fix: StopContainer is blocking, don't sleep after this
+  * Updated README
+
 0.12.1 / 2015-07-31
 ==================
 
