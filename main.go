@@ -4,22 +4,27 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path"
+	"syscall"
 	"time"
 
 	"github.com/fsouza/go-dockerclient"
 	"github.com/robfig/cron"
 )
 
-var serfElector *serfMasterElector
-var actionTimer *time.Timer
-var remoteActionTimer *time.Timer
-var cleanupTimer *time.Timer
-var configTimer *time.Timer
-var dockerClient *docker.Client
-var cfg *config
-var authConfig *docker.AuthConfigurations
-var params *dockerManagerParams
+var (
+	serfElector       *serfMasterElector
+	actionTimer       *time.Timer
+	remoteActionTimer *time.Timer
+	cleanupTimer      *time.Timer
+	configTimer       *time.Timer
+	dockerClient      *docker.Client
+	cfg               *config
+	authConfig        *docker.AuthConfigurations
+	params            *dockerManagerParams
+	configReloadChan  = make(chan os.Signal, 1)
+)
 
 // #### CONFIG ####
 func reloadConfig(params *dockerManagerParams) {
@@ -42,6 +47,8 @@ func reloadConfig(params *dockerManagerParams) {
 
 func main() {
 	params = GetStartupParameters()
+
+	signal.Notify(configReloadChan, syscall.SIGHUP)
 
 	serfElector = newSerfMasterElector()
 	go serfElector.Run(params.SerfAddress)
@@ -91,9 +98,9 @@ func main() {
 
 	// Config reload
 	c.AddFunc(fmt.Sprintf("@every %dm", params.ConfigLoadInterval), func() {
-		reloadConfig(params)
+		configReloadChan <- syscall.SIGHUP
 	})
-	reloadConfig(params)
+	configReloadChan <- syscall.SIGHUP
 
 	c.Start()
 
@@ -108,6 +115,8 @@ func main() {
 				remoteActionTimer.Stop()
 				log.Print("Disabled remote actions scheduling")
 			}
+		case <-configReloadChan:
+			reloadConfig(params)
 		case <-remoteActionTimer.C:
 			// TODO: Implement remote action scheduling
 		}
