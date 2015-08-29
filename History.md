@@ -1,4 +1,10 @@
 
+0.13.0 / 2015-08-29
+==================
+
+  * Added SIGHUP handling to reload the config
+  * Updated third party libs
+
 0.12.2 / 2015-08-02
 ==================
 
