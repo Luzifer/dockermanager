@@ -51,7 +51,9 @@ func main() {
 	signal.Notify(configReloadChan, syscall.SIGHUP)
 
 	serfElector = newSerfMasterElector()
-	go serfElector.Run(params.SerfAddress)
+	if !params.StandAlone {
+		go serfElector.Run(params.SerfAddress)
+	}
 
 	// Create a timer but stop it immediately for later usage in remote actions
 	remoteActionTimer = time.NewTimer(time.Second * 60)

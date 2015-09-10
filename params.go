@@ -13,6 +13,7 @@ type dockerManagerParams struct {
 	ImageRefreshInterval int `default:"30" flag:"refreshInterval" description:"fetch new images every <N> minutes"`
 
 	ManageFullHost bool `default:"true" flag:"fullHost" description:"Manage all containers on host"`
+	StandAlone     bool `default:"false" flag:"standalone" description:"Do not use Serf to talk to other hosts"`
 }
 
 func GetStartupParameters() *dockerManagerParams {
