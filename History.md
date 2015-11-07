@@ -1,4 +1,9 @@
 
+0.15.0 / 2015-11-07
+==================
+
+  * Do not keep images not required for current host
+
 0.14.0 / 2015-09-10
 ==================
 
