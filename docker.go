@@ -49,6 +49,9 @@ func cleanDangling() {
 func removeNotRequiredImages() {
 	required := []string{}
 	for _, v := range *cfg {
+		if !stringInSlice(serfElector.MyName, v.Hosts) {
+			continue
+		}
 		required = append(required, fmt.Sprintf("%s:%s", v.Image, v.Tag))
 	}
 
@@ -72,6 +75,9 @@ func removeNotRequiredImages() {
 
 func refreshImages() {
 	for _, v := range *cfg {
+		if !stringInSlice(serfElector.MyName, v.Hosts) {
+			continue
+		}
 		pullImage(v.Image, v.Tag)
 	}
 }
