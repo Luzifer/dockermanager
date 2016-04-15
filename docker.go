@@ -169,7 +169,7 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 
 	for _, v := range cfg.Ports {
 		s := strings.Split(v.Local, ":")
-		hostConfig.PortBindings[docker.Port(v.Container)] = []docker.PortBinding{docker.PortBinding{
+		hostConfig.PortBindings[docker.Port(v.Container)] = []docker.PortBinding{{
 			HostIP:   s[0],
 			HostPort: s[1],
 		}}
