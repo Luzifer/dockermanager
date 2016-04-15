@@ -263,6 +263,7 @@ func removeDeprecatedContainers() {
 			orFail(err)
 
 			cs, err := (*cfg)[n].Checksum()
+			orFail(err)
 
 			if helpers.StringInSlice(fmt.Sprintf("/%s", n), v.Names) {
 				needsUpdate := false

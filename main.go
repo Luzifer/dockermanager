@@ -30,16 +30,16 @@ var (
 // #### CONFIG ####
 func reloadConfig(params *dockerManagerParams) {
 	log.Print("Loading config...")
-	var err error
+	var loadErr error
 
 	var newCfg *config.Config
 
 	if _, err := os.Stat(params.Config); err == nil {
-		newCfg, err = config.LoadConfigFromFile(params.Config)
+		newCfg, loadErr = config.LoadConfigFromFile(params.Config)
 	} else {
-		newCfg, err = config.LoadConfigFromURL(params.Config)
+		newCfg, loadErr = config.LoadConfigFromURL(params.Config)
 	}
-	if err == nil {
+	if loadErr == nil {
 		cfg = newCfg
 	}
 }
