@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Luzifer/dockermanager/config"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/robfig/cron"
 )
@@ -20,7 +21,7 @@ var (
 	cleanupTimer      *time.Timer
 	configTimer       *time.Timer
 	dockerClient      *docker.Client
-	cfg               *config
+	cfg               *config.Config
 	authConfig        *docker.AuthConfigurations
 	params            *dockerManagerParams
 	configReloadChan  = make(chan os.Signal, 1)
@@ -31,12 +32,12 @@ func reloadConfig(params *dockerManagerParams) {
 	log.Print("Loading config...")
 	var err error
 
-	var newCfg *config
+	var newCfg *config.Config
 
 	if _, err := os.Stat(params.Config); err == nil {
-		newCfg, err = loadConfigFromFile(params.Config)
+		newCfg, err = config.LoadConfigFromFile(params.Config)
 	} else {
-		newCfg, err = loadConfigFromURL(params.Config)
+		newCfg, err = config.LoadConfigFromURL(params.Config)
 	}
 	if err == nil {
 		cfg = newCfg
@@ -46,7 +47,7 @@ func reloadConfig(params *dockerManagerParams) {
 // #### MAIN ####
 
 func main() {
-	params = GetStartupParameters()
+	params = getStartupParameters()
 
 	signal.Notify(configReloadChan, syscall.SIGHUP)
 

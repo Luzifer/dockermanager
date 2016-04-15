@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"crypto/sha256"
@@ -9,19 +9,22 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Luzifer/go_helpers"
 	"github.com/robfig/cron"
 	"gopkg.in/yaml.v2"
 )
 
-type config map[string]containerConfig
+// Config represents the map of container configurations
+type Config map[string]ContainerConfig
 
-type containerConfig struct {
+// ContainerConfig represents a single container to be started on the specified Hosts
+type ContainerConfig struct {
 	Command     []string          `yaml:"command,omitempty" json:"command"`
 	Environment []string          `yaml:"environment,omitempty" json:"environment"`
 	Hosts       []string          `yaml:"hosts" json:"hosts"`
 	Image       string            `yaml:"image" json:"image"`
 	Links       []string          `yaml:"links" json:"links"`
-	Ports       []portConfig      `yaml:"ports,omitempty" json:"ports"`
+	Ports       []PortConfig      `yaml:"ports,omitempty" json:"ports"`
 	Tag         string            `yaml:"tag" json:"tag"`
 	UpdateTimes []string          `yaml:"update_times,omitempty" json:"updatetimes"`
 	Volumes     []string          `yaml:"volumes,omitempty" json:"volumes"`
@@ -30,13 +33,15 @@ type containerConfig struct {
 	Labels      map[string]string `yaml:"labels" json:"labels"`
 }
 
-type portConfig struct {
+// PortConfig maps container ports to host ports
+type PortConfig struct {
 	Container string `yaml:"container" json:"container"`
 	Local     string `yaml:"local" json:"local"`
 }
 
-func loadConfigFromURL(url string) (*config, error) {
-	result := make(config)
+// LoadConfigFromURL retrieves a Config object from a remote URL
+func LoadConfigFromURL(url string) (*Config, error) {
+	result := make(Config)
 
 	resp, err := http.Get(url)
 	if err != nil {
@@ -55,8 +60,9 @@ func loadConfigFromURL(url string) (*config, error) {
 	return &result, nil
 }
 
-func loadConfigFromFile(filename string) (*config, error) {
-	result := make(config)
+// LoadConfigFromFile retrieves a Config object from a local file
+func LoadConfigFromFile(filename string) (*Config, error) {
+	result := make(Config)
 
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -73,9 +79,10 @@ func loadConfigFromFile(filename string) (*config, error) {
 	return &result, nil
 }
 
-func (c containerConfig) shouldBeRunning(hostname string) bool {
+// ShouldBeRunning determines whether a ContainerConfig object should be started
+func (c ContainerConfig) ShouldBeRunning(hostname string, lastStartContainerCall time.Time) bool {
 	// Not for our host? Nope.
-	if !stringInSlice(hostname, c.Hosts) && !stringInSlice("ALL", c.Hosts) {
+	if !helpers.StringInSlice(hostname, c.Hosts) && !helpers.StringInSlice("ALL", c.Hosts) {
 		return false
 	}
 
@@ -103,7 +110,8 @@ func (c containerConfig) shouldBeRunning(hostname string) bool {
 	return false
 }
 
-func (c containerConfig) checksum() (string, error) {
+// Checksum generates a hash over the ContainerConfig to compare it to older versions
+func (c ContainerConfig) Checksum() (string, error) {
 	data, err := json.Marshal(c)
 	if err != nil {
 		return "", err

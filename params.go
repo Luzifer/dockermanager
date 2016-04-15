@@ -16,7 +16,7 @@ type dockerManagerParams struct {
 	StandAlone     bool `default:"false" flag:"standalone" description:"Do not use Serf to talk to other hosts"`
 }
 
-func GetStartupParameters() *dockerManagerParams {
+func getStartupParameters() *dockerManagerParams {
 	cfg := &dockerManagerParams{}
 
 	rconfig.Parse(cfg)

@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Luzifer/dockermanager/config"
+	"github.com/Luzifer/go_helpers"
 	"github.com/cenkalti/backoff"
 	"github.com/fsouza/go-dockerclient"
 )
@@ -49,7 +51,7 @@ func cleanDangling() {
 func removeNotRequiredImages() {
 	required := []string{}
 	for _, v := range *cfg {
-		if stringInSlice(serfElector.MyName, v.Hosts) || stringInSlice("ALL", v.Hosts) {
+		if helpers.StringInSlice(serfElector.MyName, v.Hosts) || helpers.StringInSlice("ALL", v.Hosts) {
 			required = append(required, fmt.Sprintf("%s:%s", v.Image, v.Tag))
 		}
 	}
@@ -74,7 +76,7 @@ func removeNotRequiredImages() {
 
 func refreshImages() {
 	for _, v := range *cfg {
-		if stringInSlice(serfElector.MyName, v.Hosts) || stringInSlice("ALL", v.Hosts) {
+		if helpers.StringInSlice(serfElector.MyName, v.Hosts) || helpers.StringInSlice("ALL", v.Hosts) {
 			pullImage(v.Image, v.Tag)
 		}
 	}
@@ -100,14 +102,14 @@ func pullImage(image, tag string) {
 	orLog(err)
 }
 
-func bootContainer(name string, cfg containerConfig) {
+func bootContainer(name string, cfg config.ContainerConfig) {
 	var (
 		container *docker.Container
 		err       error
 		bo        = backoff.NewExponentialBackOff()
 	)
 
-	cs, err := cfg.checksum()
+	cs, err := cfg.Checksum()
 	orFail(err)
 	if err != nil {
 		return
@@ -188,7 +190,7 @@ func listRunningContainers() ([]docker.APIContainers, error) {
 func getExpectedRunningNames() []string {
 	expectedRunning := []string{}
 	for name, containerCfg := range *cfg {
-		if containerCfg.shouldBeRunning(serfElector.MyName) {
+		if containerCfg.ShouldBeRunning(serfElector.MyName, lastStartContainerCall) {
 			expectedRunning = append(expectedRunning, name)
 		}
 	}
@@ -221,7 +223,7 @@ func stopUnexpectedContainers() {
 		}
 
 		for _, n := range v.Names {
-			if stringInSlice(strings.Trim(n, "/"), expectedRunning) {
+			if helpers.StringInSlice(strings.Trim(n, "/"), expectedRunning) {
 				allowed = true
 			}
 		}
@@ -248,7 +250,7 @@ func removeDeprecatedContainers() {
 		repoName := strings.Join([]string{(*cfg)[n].Image, (*cfg)[n].Tag}, ":")
 		currentImageID := "0"
 		for _, i := range images {
-			if stringInSlice(repoName, i.RepoTags) {
+			if helpers.StringInSlice(repoName, i.RepoTags) {
 				currentImageID = i.ID
 			}
 		}
@@ -260,9 +262,9 @@ func removeDeprecatedContainers() {
 			containerDetails, err := dockerClient.InspectContainer(v.ID)
 			orFail(err)
 
-			cs, err := (*cfg)[n].checksum()
+			cs, err := (*cfg)[n].Checksum()
 
-			if stringInSlice(fmt.Sprintf("/%s", n), v.Names) {
+			if helpers.StringInSlice(fmt.Sprintf("/%s", n), v.Names) {
 				needsUpdate := false
 				if !strings.HasPrefix(currentImageID, containerDetails.Image) {
 					log.Printf("Container %s has a new image version.", n)
@@ -318,7 +320,7 @@ func startExpectedContainers() {
 		}
 	}
 	for _, n := range expectedRunning {
-		if !stringInSlice(n, runningNames) {
+		if !helpers.StringInSlice(n, runningNames) {
 			bootContainer(n, (*cfg)[n])
 		}
 	}
