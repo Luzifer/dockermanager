@@ -1,3 +1,7 @@
+[![Go Report Card](https://goreportcard.com/badge/github.com/Luzifer/dockermanager)](https://goreportcard.com/report/github.com/Luzifer/dockermanager)
+[![License: Apache v2.0](https://badge.luzifer.io/v1/badge?color=5d79b5&title=license&text=Apache+v2.0)](http://www.apache.org/licenses/LICENSE-2.0)
+[![GoDoc reference](http://badge.luzifer.io/v1/badge?color=5d79b5&title=godoc&text=reference)](https://godoc.org/github.com/Luzifer/dockermanager/config)
+
 # luzifer / dockermanager
 
 The intention of this project is to have a running daemon on a [docker](https://www.docker.com/) host server which is able to realize a configuration of docker containers. For this it manages all containers and images on the docker host. This includes starting and stopping containers which are or are not defined by the configuration file.
@@ -30,6 +34,7 @@ Usage of ./dockermanager:
       --fullHost[=true]: Manage all containers on host
       --refreshInterval=30: fetch new images every <N> minutes
       --serfAddress="127.0.0.1:7373": Address of the serf agent to connect to
+      --standalone[=false]: Do not use Serf to talk to other hosts
 ```
 
 ### Configuration file
