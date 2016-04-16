@@ -14,8 +14,9 @@ registry:
     - AWS_KEY=YOURAWSKEY
     - AWS_SECRET=YOURAWSSECRETKEY
     - SEARCH_BACKEND=sqlalchemy
-    - ROUTER_SLUG=registry
-    - ROUTER_PORT=1010
+  dockerproxy:
+    slug: registry
+    port: 1010
 
 dockerproxy:
   hosts:
@@ -38,7 +39,7 @@ jenkins:
   ports:
     - container: 8080/tcp
       local: 0.0.0.0:1000
-  environment:
-    - ROUTER_SLUG=jenkins
-    - ROUTER_PORT=1000
+  dockerproxy:
+    slug: jenkins
+    port: 1000
 

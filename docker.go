@@ -126,6 +126,11 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		labels["io.luzifer.dockermanager.scheduler"] = "true"
 	}
 
+	if cfg.DockerProxy.Slug != "" {
+		labels["io.luzifer.dockerproxy.slug"] = cfg.DockerProxy.Slug
+		labels["io.luzifer.dockerproxy.port"] = cfg.DockerProxy.Port
+	}
+
 	newcfg := &docker.Config{
 		AttachStdin:  false,
 		AttachStdout: true,
