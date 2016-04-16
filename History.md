@@ -1,4 +1,12 @@
 
+0.16.0 / 2016-04-16
+==================
+
+  * Added native support for dockerproxy
+  * Refactored to export configuration
+  * Fix: Ineffassign errors
+  * Fix: Used `gofmt -s` on code
+
 0.15.1 / 2015-11-08
 ==================
 
