@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -128,7 +129,7 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 
 	if cfg.DockerProxy.Slug != "" {
 		labels["io.luzifer.dockerproxy.slug"] = cfg.DockerProxy.Slug
-		labels["io.luzifer.dockerproxy.port"] = cfg.DockerProxy.Port
+		labels["io.luzifer.dockerproxy.port"] = strconv.FormatInt(int64(cfg.DockerProxy.Port), 10)
 	}
 
 	newcfg := &docker.Config{
