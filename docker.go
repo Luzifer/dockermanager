@@ -142,12 +142,28 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		Labels:       labels,
 	}
 
+	hostConfig := &docker.HostConfig{
+		Binds:        cfg.Volumes,
+		Links:        cfg.Links,
+		Privileged:   false,
+		PortBindings: make(map[docker.Port][]docker.PortBinding),
+	}
+
+	for _, v := range cfg.Ports {
+		s := strings.Split(v.Local, ":")
+		hostConfig.PortBindings[docker.Port(v.Container)] = []docker.PortBinding{{
+			HostIP:   s[0],
+			HostPort: s[1],
+		}}
+	}
+
 	bo.MaxElapsedTime = time.Minute
 	err = backoff.Retry(func() error {
 		log.Printf("Creating container %s", name)
 		container, err = dockerClient.CreateContainer(docker.CreateContainerOptions{
-			Name:   name,
-			Config: newcfg,
+			Name:       name,
+			Config:     newcfg,
+			HostConfig: hostConfig,
 		})
 		orLog(err)
 		if err != nil {
@@ -166,23 +182,8 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		return
 	}
 
-	hostConfig := docker.HostConfig{
-		Binds:        cfg.Volumes,
-		Links:        cfg.Links,
-		Privileged:   false,
-		PortBindings: make(map[docker.Port][]docker.PortBinding),
-	}
-
-	for _, v := range cfg.Ports {
-		s := strings.Split(v.Local, ":")
-		hostConfig.PortBindings[docker.Port(v.Container)] = []docker.PortBinding{{
-			HostIP:   s[0],
-			HostPort: s[1],
-		}}
-	}
-
 	log.Printf("Starting container %s", container.Name)
-	dockerClient.StartContainer(container.Name, &hostConfig)
+	dockerClient.StartContainer(container.Name, nil)
 }
 
 func listRunningContainers() ([]docker.APIContainers, error) {
