@@ -1,3 +1,6 @@
+# 0.16.2 / 2016-05-17
+
+  * Fix: Docker host-config deprication message
 
 0.16.1 / 2016-04-16
 ==================
