@@ -1,6 +1,7 @@
 {
 	"ImportPath": "github.com/Luzifer/dockermanager",
-	"GoVersion": "go1.5",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v62",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Luzifer/rconfig",
