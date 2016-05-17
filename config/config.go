@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Luzifer/go_helpers"
+	"github.com/Luzifer/go_helpers/str"
 	"github.com/robfig/cron"
 	"gopkg.in/yaml.v2"
 )
@@ -89,7 +89,7 @@ func LoadConfigFromFile(filename string) (*Config, error) {
 // ShouldBeRunning determines whether a ContainerConfig object should be started
 func (c ContainerConfig) ShouldBeRunning(hostname string, lastStartContainerCall time.Time) bool {
 	// Not for our host? Nope.
-	if !helpers.StringInSlice(hostname, c.Hosts) && !helpers.StringInSlice("ALL", c.Hosts) {
+	if !str.StringInSlice(hostname, c.Hosts) && !str.StringInSlice("ALL", c.Hosts) {
 		return false
 	}
 

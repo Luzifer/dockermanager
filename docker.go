@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Luzifer/dockermanager/config"
-	"github.com/Luzifer/go_helpers"
+	"github.com/Luzifer/go_helpers/str"
 	"github.com/cenkalti/backoff"
 	"github.com/fsouza/go-dockerclient"
 )
@@ -52,7 +52,7 @@ func cleanDangling() {
 func removeNotRequiredImages() {
 	required := []string{}
 	for _, v := range *cfg {
-		if helpers.StringInSlice(serfElector.MyName, v.Hosts) || helpers.StringInSlice("ALL", v.Hosts) {
+		if str.StringInSlice(serfElector.MyName, v.Hosts) || str.StringInSlice("ALL", v.Hosts) {
 			required = append(required, fmt.Sprintf("%s:%s", v.Image, v.Tag))
 		}
 	}
@@ -77,7 +77,7 @@ func removeNotRequiredImages() {
 
 func refreshImages() {
 	for _, v := range *cfg {
-		if helpers.StringInSlice(serfElector.MyName, v.Hosts) || helpers.StringInSlice("ALL", v.Hosts) {
+		if str.StringInSlice(serfElector.MyName, v.Hosts) || str.StringInSlice("ALL", v.Hosts) {
 			pullImage(v.Image, v.Tag)
 		}
 	}
@@ -229,7 +229,7 @@ func stopUnexpectedContainers() {
 		}
 
 		for _, n := range v.Names {
-			if helpers.StringInSlice(strings.Trim(n, "/"), expectedRunning) {
+			if str.StringInSlice(strings.Trim(n, "/"), expectedRunning) {
 				allowed = true
 			}
 		}
@@ -256,7 +256,7 @@ func removeDeprecatedContainers() {
 		repoName := strings.Join([]string{(*cfg)[n].Image, (*cfg)[n].Tag}, ":")
 		currentImageID := "0"
 		for _, i := range images {
-			if helpers.StringInSlice(repoName, i.RepoTags) {
+			if str.StringInSlice(repoName, i.RepoTags) {
 				currentImageID = i.ID
 			}
 		}
@@ -271,7 +271,7 @@ func removeDeprecatedContainers() {
 			cs, err := (*cfg)[n].Checksum()
 			orFail(err)
 
-			if helpers.StringInSlice(fmt.Sprintf("/%s", n), v.Names) {
+			if str.StringInSlice(fmt.Sprintf("/%s", n), v.Names) {
 				needsUpdate := false
 				if !strings.HasPrefix(currentImageID, containerDetails.Image) {
 					log.Printf("Container %s has a new image version.", n)
@@ -327,7 +327,7 @@ func startExpectedContainers() {
 		}
 	}
 	for _, n := range expectedRunning {
-		if !helpers.StringInSlice(n, runningNames) {
+		if !str.StringInSlice(n, runningNames) {
 			bootContainer(n, (*cfg)[n])
 		}
 	}
