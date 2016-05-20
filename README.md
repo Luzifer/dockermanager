@@ -59,6 +59,7 @@ The configuration is written in YAML format and reloaded regulary by the daemon:
   - `dockerproxy`: Configuration for the [dockerproxy](https://github.com/Luzifer/dockerproxy)
     - `slug`: Name part of the URL to map to this container
     - `port`: Published port (see `ports` above)
+  - `add_cap`: Array of [capabilities](https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities) to add to this container
 
 Example configuration for a jenkins container:
 

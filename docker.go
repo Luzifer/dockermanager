@@ -147,6 +147,7 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		Links:        cfg.Links,
 		Privileged:   false,
 		PortBindings: make(map[docker.Port][]docker.PortBinding),
+		CapAdd:       cfg.AddCapabilities,
 	}
 
 	for _, v := range cfg.Ports {
