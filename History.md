@@ -1,3 +1,7 @@
+# 0.17.0 / 2016-05-20
+
+  * Added option to add capabilities
+
 # 0.16.2 / 2016-05-17
 
   * Fix: Docker host-config deprication message
