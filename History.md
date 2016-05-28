@@ -1,3 +1,7 @@
+# 0.18.0 / 2016-05-28
+
+  * Force removal of "Dead" containers
+
 # 0.17.1 / 2016-05-27
 
   * Fix: Docker config does not contain URLs but hostnames
