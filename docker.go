@@ -345,10 +345,11 @@ func cleanContainers() {
 	}
 
 	for _, v := range runningContainers {
-		if strings.HasPrefix(v.Status, "Exited") {
-			log.Printf("Removing stopped container %s", v.ID)
+		if strings.HasPrefix(v.Status, "Exited") || strings.HasPrefix(v.Status, "Dead") {
+			log.Printf("Removing container %s (Status %s)", v.ID, v.Status)
 			err := dockerClient.RemoveContainer(docker.RemoveContainerOptions{
-				ID: v.ID,
+				ID:    v.ID,
+				Force: true,
 			})
 			orLog(err)
 		}
