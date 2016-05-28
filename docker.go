@@ -50,6 +50,11 @@ func cleanDangling() {
 }
 
 func removeNotRequiredImages() {
+	if !params.ManageFullHost {
+		// If we're not responsible for the full host don't remove images
+		return
+	}
+
 	required := []string{}
 	for _, v := range *cfg {
 		if str.StringInSlice(serfElector.MyName, v.Hosts) || str.StringInSlice("ALL", v.Hosts) {
