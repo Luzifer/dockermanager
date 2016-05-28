@@ -1,3 +1,7 @@
+# 0.18.1 / 2016-05-28
+
+  * Fix: Do not delete images when not managing full host
+
 # 0.18.0 / 2016-05-28
 
   * Force removal of "Dead" containers
