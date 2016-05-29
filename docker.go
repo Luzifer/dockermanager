@@ -13,6 +13,14 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+const (
+	labelIsManaged       = "io.luzifer.dockermanager.managed"
+	labelConfigHash      = "io.luzifer.dockermanager.cfghash"
+	labelIsScheduled     = "io.luzifer.dockermanager.scheduler"
+	labelDockerProxySlug = "io.luzifer.dockerproxy.slug"
+	labelDockerProxyPort = "io.luzifer.dockerproxy.port"
+)
+
 var (
 	lastStartContainerCall = time.Now()
 )
@@ -125,16 +133,16 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 	if labels == nil {
 		labels = map[string]string{}
 	}
-	labels["io.luzifer.dockermanager.cfghash"] = cs
-	labels["io.luzifer.dockermanager.managed"] = "true"
+	labels[labelConfigHash] = cs
+	labels[labelIsManaged] = "true"
 
 	if cfg.StartTimes != "" {
-		labels["io.luzifer.dockermanager.scheduler"] = "true"
+		labels[labelIsScheduled] = "true"
 	}
 
 	if cfg.DockerProxy.Slug != "" {
-		labels["io.luzifer.dockerproxy.slug"] = cfg.DockerProxy.Slug
-		labels["io.luzifer.dockerproxy.port"] = strconv.FormatInt(int64(cfg.DockerProxy.Port), 10)
+		labels[labelDockerProxySlug] = cfg.DockerProxy.Slug
+		labels[labelDockerProxyPort] = strconv.FormatInt(int64(cfg.DockerProxy.Port), 10)
 	}
 
 	newcfg := &docker.Config{
@@ -225,12 +233,12 @@ func stopUnexpectedContainers() {
 		containerDetails, err := dockerClient.InspectContainer(v.ID)
 		orFail(err)
 
-		_, isManaged := containerDetails.Config.Labels["io.luzifer.dockermanager.managed"]
+		_, isManaged := containerDetails.Config.Labels[labelIsManaged]
 		if !params.ManageFullHost && !isManaged {
 			allowed = true
 		}
 
-		if containerDetails.Config.Labels["io.luzifer.dockermanager.scheduler"] == "true" {
+		if containerDetails.Config.Labels[labelIsScheduled] == "true" {
 			// If it's a scheduled container keep it running
 			allowed = true
 		}
@@ -284,7 +292,7 @@ func removeDeprecatedContainers() {
 					log.Printf("Container %s has a new image version.", n)
 					needsUpdate = true
 				}
-				if containerDetails.Config.Labels["io.luzifer.dockermanager.cfghash"] != cs {
+				if containerDetails.Config.Labels[labelConfigHash] != cs {
 					log.Printf("Container %s has a configuration update.", n)
 					needsUpdate = true
 				}
@@ -350,7 +358,9 @@ func cleanContainers() {
 	}
 
 	for _, v := range runningContainers {
-		if strings.HasPrefix(v.Status, "Exited") || strings.HasPrefix(v.Status, "Dead") {
+		_, isManaged := v.Labels[labelIsManaged]
+
+		if strings.HasPrefix(v.Status, "Exited") || strings.HasPrefix(v.Status, "Dead") || (strings.HasPrefix(v.Status, "Created") && isManaged) {
 			log.Printf("Removing container %s (Status %s)", v.ID, v.Status)
 			err := dockerClient.RemoveContainer(docker.RemoveContainerOptions{
 				ID:    v.ID,
