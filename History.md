@@ -1,3 +1,7 @@
+# 0.19.0 / 2016-05-29
+
+  * Remove containers managed by dockermanager and "Created"
+
 # 0.18.1 / 2016-05-28
 
   * Fix: Do not delete images when not managing full host
