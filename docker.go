@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -146,7 +145,7 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		labels[labelDockerProxyPort] = strconv.FormatInt(int64(cfg.DockerProxy.Port), 10)
 	}
 
-	mounts, volumes, binds := parseMounts(cfg.Volumes)
+	volumes, binds := parseMounts(cfg.Volumes)
 
 	newcfg := &docker.Config{
 		AttachStdin:  false,
@@ -157,7 +156,6 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		Cmd:          cfg.Command,
 		Labels:       labels,
 		Volumes:      volumes,
-		Mounts:       mounts,
 	}
 
 	hostConfig := &docker.HostConfig{
@@ -376,7 +374,7 @@ func cleanContainers() {
 	}
 }
 
-func parseMounts(mountIn []string) (mounts []docker.Mount, volumes map[string]struct{}, binds []string) {
+func parseMounts(mountIn []string) (volumes map[string]struct{}, binds []string) {
 	volumes = make(map[string]struct{})
 	for _, m := range mountIn {
 		if len(m) == 0 {
@@ -389,22 +387,8 @@ func parseMounts(mountIn []string) (mounts []docker.Mount, volumes map[string]st
 			continue
 		}
 
-		if stat, err := os.Stat(parts[0]); err == nil && !stat.IsDir() {
-			binds = append(binds, m)
-			continue
-		}
-
-		mo := docker.Mount{
-			Source:      parts[0],
-			Destination: parts[1],
-		}
-
-		if len(parts) == 3 {
-			mo.RW = (parts[3] != "ro")
-		}
-
-		mounts = append(mounts, mo)
-		volumes[mo.Destination] = struct{}{}
+		binds = append(binds, m)
+		volumes[parts[1]] = struct{}{}
 	}
 
 	return
