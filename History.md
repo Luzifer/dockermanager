@@ -1,3 +1,7 @@
+# 0.19.2 / 2016-10-08
+
+  * Fix: Volumes behaves strange
+
 # 0.19.1 / 2016-10-08
 
   * Fix: Differentiate between volume / bind mounts
