@@ -1,3 +1,7 @@
+# 0.19.1 / 2016-10-08
+
+  * Fix: Differentiate between volume / bind mounts
+
 # 0.19.0 / 2016-05-29
 
   * Remove containers managed by dockermanager and "Created"
