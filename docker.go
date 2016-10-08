@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -145,6 +146,8 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		labels[labelDockerProxyPort] = strconv.FormatInt(int64(cfg.DockerProxy.Port), 10)
 	}
 
+	mounts, volumes, binds := parseMounts(cfg.Volumes)
+
 	newcfg := &docker.Config{
 		AttachStdin:  false,
 		AttachStdout: true,
@@ -153,10 +156,12 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		Env:          cfg.Environment,
 		Cmd:          cfg.Command,
 		Labels:       labels,
+		Volumes:      volumes,
+		Mounts:       mounts,
 	}
 
 	hostConfig := &docker.HostConfig{
-		Binds:        cfg.Volumes,
+		Binds:        binds,
 		Links:        cfg.Links,
 		Privileged:   false,
 		PortBindings: make(map[docker.Port][]docker.PortBinding),
@@ -369,4 +374,38 @@ func cleanContainers() {
 			orLog(err)
 		}
 	}
+}
+
+func parseMounts(mountIn []string) (mounts []docker.Mount, volumes map[string]struct{}, binds []string) {
+	volumes = make(map[string]struct{})
+	for _, m := range mountIn {
+		if len(m) == 0 {
+			continue
+		}
+
+		parts := strings.Split(m, ":")
+		if len(parts) != 2 && len(parts) != 3 {
+			log.Printf("[ERRO] Invalid default mount: %s", m)
+			continue
+		}
+
+		if stat, err := os.Stat(parts[0]); err == nil && !stat.IsDir() {
+			binds = append(binds, m)
+			continue
+		}
+
+		mo := docker.Mount{
+			Source:      parts[0],
+			Destination: parts[1],
+		}
+
+		if len(parts) == 3 {
+			mo.RW = (parts[3] != "ro")
+		}
+
+		mounts = append(mounts, mo)
+		volumes[mo.Destination] = struct{}{}
+	}
+
+	return
 }
