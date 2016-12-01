@@ -129,9 +129,11 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		return
 	}
 
-	labels := cfg.Labels
-	if labels == nil {
-		labels = map[string]string{}
+	labels := map[string]string{}
+	if labels != nil {
+		for k, v := range cfg.Labels {
+			labels[k] = v
+		}
 	}
 	labels[labelConfigHash] = cs
 	labels[labelIsManaged] = "true"
