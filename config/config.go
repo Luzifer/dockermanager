@@ -1,8 +1,6 @@
 package config
 
 import (
-	"crypto/sha256"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Luzifer/go_helpers/str"
+	"github.com/cnf/structhash"
 	"github.com/robfig/cron"
 	"gopkg.in/yaml.v2"
 )
@@ -120,10 +119,5 @@ func (c ContainerConfig) ShouldBeRunning(hostname string, lastStartContainerCall
 
 // Checksum generates a hash over the ContainerConfig to compare it to older versions
 func (c ContainerConfig) Checksum() (string, error) {
-	data, err := json.Marshal(c)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%+x", sha256.Sum256(data)), nil
+	return fmt.Sprintf("%x", structhash.Sha1(c, 1)), nil
 }

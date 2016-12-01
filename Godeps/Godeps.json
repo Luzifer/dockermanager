@@ -1,13 +1,8 @@
 {
 	"ImportPath": "github.com/Luzifer/dockermanager",
-	"GoVersion": "go1.6",
-	"GodepVersion": "v62",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v74",
 	"Deps": [
-		{
-			"ImportPath": "github.com/Luzifer/go_helpers",
-			"Comment": "v1.2.0",
-			"Rev": "8f328116d40a798e1f87ecf67229d56a3dda3815"
-		},
 		{
 			"ImportPath": "github.com/Luzifer/go_helpers/str",
 			"Comment": "v1.2.0",
@@ -29,6 +24,10 @@
 		{
 			"ImportPath": "github.com/cenkalti/backoff",
 			"Rev": "4dc77674aceaabba2c7e3da25d4c823edfb73f99"
+		},
+		{
+			"ImportPath": "github.com/cnf/structhash",
+			"Rev": "f5315d4d2328a72285a323bf0542c3fb182634b7"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/opts",
