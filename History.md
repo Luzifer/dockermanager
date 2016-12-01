@@ -1,3 +1,7 @@
+# 0.19.4 / 2016-12-01
+
+  * Fix: Do not modify labels of config when programmatically adding labels
+
 # 0.19.3 / 2016-12-01
 
   * Move to structhash to prevent changing hash through map order
