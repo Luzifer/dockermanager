@@ -1,3 +1,7 @@
+# 0.19.3 / 2016-12-01
+
+  * Move to structhash to prevent changing hash through map order
+
 # 0.19.2 / 2016-10-08
 
   * Fix: Volumes behaves strange
