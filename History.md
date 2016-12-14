@@ -1,3 +1,7 @@
+# 0.20.0 / 2016-12-15
+
+  * Enable pushing assets to Github
+
 # 0.19.4 / 2016-12-01
 
   * Fix: Do not modify labels of config when programmatically adding labels
