@@ -5,11 +5,11 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Luzifer/dockermanager/config"
 	"github.com/Luzifer/go_helpers/str"
-	"github.com/cenkalti/backoff"
 	"github.com/fsouza/go-dockerclient"
 )
 
@@ -23,6 +23,9 @@ const (
 
 var (
 	lastStartContainerCall = time.Now()
+
+	pullLock     = map[string]bool{}
+	pullLockLock sync.RWMutex
 )
 
 func getImages(dangling bool) []docker.APIImages {
@@ -97,6 +100,21 @@ func refreshImages() {
 }
 
 func pullImage(image, tag string) {
+	pullLockLock.Lock()
+	if pullLock[image+":"+tag] {
+		log.Printf("Image %q is already pulling, starting no new pull", image+":"+tag)
+		pullLockLock.Unlock()
+		return
+	}
+	pullLock[image+":"+tag] = true
+	pullLockLock.Unlock()
+
+	defer func() {
+		pullLockLock.Lock()
+		pullLock[image+":"+tag] = false
+		pullLockLock.Unlock()
+	}()
+
 	auth := docker.AuthConfiguration{}
 
 	reginfo := strings.SplitN(image, "/", 2)
@@ -120,7 +138,6 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 	var (
 		container *docker.Container
 		err       error
-		bo        = backoff.NewExponentialBackOff()
 	)
 
 	cs, err := cfg.Checksum()
@@ -176,28 +193,21 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		}}
 	}
 
-	bo.MaxElapsedTime = time.Minute
-	err = backoff.Retry(func() error {
-		log.Printf("Creating container %s", name)
-		container, err = dockerClient.CreateContainer(docker.CreateContainerOptions{
-			Name:       name,
-			Config:     newcfg,
-			HostConfig: hostConfig,
-		})
-		orLog(err)
-		if err != nil {
-			if strings.Contains(err.Error(), "no such image") {
-				pullImage(cfg.Image, cfg.Tag)
-			}
-			if strings.Contains(err.Error(), "is already in use by container") {
-				cleanContainers()
-			}
-		}
-		return err
-	}, bo)
+	log.Printf("Creating container %s", name)
+	container, err = dockerClient.CreateContainer(docker.CreateContainerOptions{
+		Name:       name,
+		Config:     newcfg,
+		HostConfig: hostConfig,
+	})
 
 	if err != nil {
-		log.Printf("Unable to start container '%s': %s", name, err)
+		switch {
+		case strings.Contains(err.Error(), "is already in use by container"):
+			go cleanContainers()
+		case strings.Contains(err.Error(), "already exists"):
+			go cleanContainers()
+		}
+		log.Printf("Unable to create container '%s': %s", name, err)
 		return
 	}
 
@@ -281,7 +291,8 @@ func removeDeprecatedContainers() {
 			}
 		}
 		if currentImageID == "0" {
-			log.Printf("Found no image ID for repo %s", strings.Join([]string{(*cfg)[n].Image, (*cfg)[n].Tag}, ":"))
+			log.Printf("Found no image ID for repo %q, starting background pull", strings.Join([]string{(*cfg)[n].Image, (*cfg)[n].Tag}, ":"))
+			go pullImage((*cfg)[n].Image, (*cfg)[n].Tag)
 			continue
 		}
 		for _, v := range currentRunning {
