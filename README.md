@@ -9,11 +9,24 @@ The intention of this project is to have a running daemon on a [docker](https://
 
 ## Requirements
 
-- One or more host servers with latest [lxc-docker](https://docs.docker.com/installation/ubuntulinux/)
+- One or more host servers with latest [docker-ce / docker-ee](https://store.docker.com/search?type=edition&offering=community)
 - A config file or config URL to serve the configuration from
 - Docker daemon listening on tcp port
 - The dockermanager set up
 - If you want to use images from a private registry put a `.dockercfg` file (`docker login`) to the homedir of the user running dockermanager
+
+## Wasn't this supposed to be a cluster manager?
+
+Yeah, speaking of pre-1.0 versions this is true. In the early development the dockermanager was intended to use a serf cluster to manage a whole cluster of machines. Because I never had the need to manage a cluster on my private projects I never really worked on the cluster logic.
+
+In the meantime a bunch of cluster managers / schedulers having the capability to run Docker containers emerged and therefore I decided to cut out the cluster functionality. Following the principle "do one thing and do it well" the dockermanager now concentrates on managing single machines.
+
+I'm managing a handfull of servers running as single nodes and that's where I'm optimizing the dockermanager. If you are searching for a solution to manage a cluster of machines you might want to take a look at these ones:
+
+- [Amazon ECS](https://aws.amazon.com/ecs/) (Running Docker containers on a cluster of EC2s)
+- [Hashicorp Nomad](https://www.nomadproject.io/) (Full cluster solution including ability to run Docker containers)
+- [Kubernetes](https://kubernetes.io/) (Automated container deployment, scaling, and management)
+- [Mesosphere DC/OS](https://mesosphere.com/product/) (OS built around containers and services)
 
 ## Configuration
 
@@ -32,7 +45,7 @@ Usage of ./dockermanager:
 
 ### Configuration file
 
-The configuration is written in YAML format and reloaded regulary by the daemon:
+The configuration is written in YAML format and reloaded regularly by the daemon:
 
 - `container-name`: Name of the container on the host. Needs to be unique
   - `command`: Override CMD value set by Dockerfile
@@ -44,7 +57,7 @@ The configuration is written in YAML format and reloaded regulary by the daemon:
   - `ports`: Array of port configurations
     - `container`: Exported port in the container e.g. `80/tcp` or `12201/udp`
     - `local`: IP/port combination in the form `<ip>:<port>`
-  - `environment`: Array of enviroment variables in form `<key>=<value>`
+  - `environment`: Array of environment variables in form `<key>=<value>`
   - `update_times`: Array of allowed time frames for updates of this container in format `HH:MM-HH:MM` (Optional, if not specified container is allowed to get updated all the time.)
   - `start_times`: Cron-style time specification when to start this container. Pay attention to choose a container quitting before your specified interval for this. Containers having this specification will not get started by default and are not restarted after they quit. Use this for starting cron-like tasks.
   - `stop_timeout`: Time in seconds to wait when stopping a deprecated container to be exchanged. (default: 5s)
