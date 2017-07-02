@@ -1,3 +1,8 @@
+# 1.1.0 / 2017-07-02
+
+  * Change default docker-host to Unix socket
+  * Fix: Some more linter errors
+
 # 1.0.0 / 2017-07-02
 
 - Clustering through serf is no longer supported which means the corresponding CLI flags are removed in this version. The `hosts` list is still supported and can be used to start different container constellations on different hosts from one configuration file.
