@@ -1,3 +1,7 @@
+# 0.21.0 / 2017-07-02
+
+  * Improve automated fetching of non-existent images
+
 # 0.20.0 / 2016-12-15
 
   * Enable pushing assets to Github
