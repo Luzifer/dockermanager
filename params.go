@@ -20,7 +20,7 @@ type dockerManagerParams struct {
 
 func getStartupParameters() (*dockerManagerParams, error) {
 	var (
-		cfg      *dockerManagerParams
+		cfg      dockerManagerParams
 		err      error
 		logLevel log.Level
 	)
@@ -35,5 +35,5 @@ func getStartupParameters() (*dockerManagerParams, error) {
 
 	log.SetLevel(logLevel)
 
-	return cfg, rconfig.ParseAndValidate(cfg)
+	return &cfg, nil
 }
