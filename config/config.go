@@ -51,6 +51,10 @@ func LoadConfigFromURL(url string) (*Config, error) {
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Errorf("Unable to read HTTP body: %s", err)
+		return nil, err
+	}
 
 	err = yaml.Unmarshal(body, &result)
 	if err != nil {
@@ -67,7 +71,7 @@ func LoadConfigFromFile(filename string) (*Config, error) {
 
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Errorf("Unabel to read config from file %q: %s", filename, err)
+		log.Errorf("Unable to read config from file %q: %s", filename, err)
 		return nil, err
 	}
 
@@ -103,12 +107,8 @@ func (c ContainerConfig) ShouldBeRunning(hostname string, lastStartContainerCall
 	cmp := lastStartContainerCall.Add(time.Second)
 	// Sub one second to have it at xx:xx:59 so we are at least 1s after that point of time
 	nxt := schedule.Next(cmp).Add(-1 * time.Second)
-	if nxt.Before(time.Now()) {
-		return true
-	}
 
-	// If we get here, we should probably not be running.
-	return false
+	return nxt.Before(time.Now())
 }
 
 // Checksum generates a hash over the ContainerConfig to compare it to older versions
