@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -14,11 +13,9 @@ import (
 )
 
 const (
-	labelIsManaged       = "io.luzifer.dockermanager.managed"
-	labelConfigHash      = "io.luzifer.dockermanager.cfghash"
-	labelIsScheduled     = "io.luzifer.dockermanager.scheduler"
-	labelDockerProxySlug = "io.luzifer.dockerproxy.slug"
-	labelDockerProxyPort = "io.luzifer.dockerproxy.port"
+	labelIsManaged   = "io.luzifer.dockermanager.managed"
+	labelConfigHash  = "io.luzifer.dockermanager.cfghash"
+	labelIsScheduled = "io.luzifer.dockermanager.scheduler"
 
 	strTrue = "true"
 )
@@ -159,11 +156,6 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 
 	if cfg.StartTimes != "" {
 		labels[labelIsScheduled] = strTrue
-	}
-
-	if cfg.DockerProxy.Slug != "" {
-		labels[labelDockerProxySlug] = cfg.DockerProxy.Slug
-		labels[labelDockerProxyPort] = strconv.Itoa(cfg.DockerProxy.Port)
 	}
 
 	volumes, binds := parseMounts(cfg.Volumes)

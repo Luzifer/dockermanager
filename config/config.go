@@ -18,26 +18,19 @@ type Config map[string]ContainerConfig
 
 // ContainerConfig represents a single container to be started on the specified Hosts
 type ContainerConfig struct {
-	Command         []string                 `yaml:"command,omitempty" json:"command"`
-	Environment     []string                 `yaml:"environment,omitempty" json:"environment"`
-	Hosts           []string                 `yaml:"hosts" json:"hosts"`
-	Image           string                   `yaml:"image" json:"image"`
-	Links           []string                 `yaml:"links" json:"links"`
-	Ports           []PortConfig             `yaml:"ports,omitempty" json:"ports"`
-	Tag             string                   `yaml:"tag" json:"tag"`
-	UpdateTimes     []string                 `yaml:"update_times,omitempty" json:"updatetimes"`
-	Volumes         []string                 `yaml:"volumes,omitempty" json:"volumes"`
-	StartTimes      string                   `yaml:"start_times" json:"starttimes"`
-	StopTimeout     uint                     `yaml:"stop_timeout" json:"stoptimes"`
-	Labels          map[string]string        `yaml:"labels" json:"labels"`
-	DockerProxy     DockerProxyConfiguration `yaml:"dockerproxy" json:"dockerproxy"`
-	AddCapabilities []string                 `yaml:"cap_add" json:"cap_add"`
-}
-
-// DockerProxyConfiguration contains a slug and a port to map for the dockerproxy
-type DockerProxyConfiguration struct {
-	Slug string `yaml:"slug" json:"slug"`
-	Port int    `yaml:"port" json:"port"`
+	Command         []string          `yaml:"command,omitempty" json:"command"`
+	Environment     []string          `yaml:"environment,omitempty" json:"environment"`
+	Hosts           []string          `yaml:"hosts" json:"hosts"`
+	Image           string            `yaml:"image" json:"image"`
+	Links           []string          `yaml:"links" json:"links"`
+	Ports           []PortConfig      `yaml:"ports,omitempty" json:"ports"`
+	Tag             string            `yaml:"tag" json:"tag"`
+	UpdateTimes     []string          `yaml:"update_times,omitempty" json:"updatetimes"`
+	Volumes         []string          `yaml:"volumes,omitempty" json:"volumes"`
+	StartTimes      string            `yaml:"start_times" json:"starttimes"`
+	StopTimeout     uint              `yaml:"stop_timeout" json:"stoptimes"`
+	Labels          map[string]string `yaml:"labels" json:"labels"`
+	AddCapabilities []string          `yaml:"cap_add" json:"cap_add"`
 }
 
 // PortConfig maps container ports to host ports
