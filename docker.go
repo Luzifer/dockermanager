@@ -212,7 +212,7 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		return
 	}
 
-	log.Debugf("Starting container %s", container.Name)
+	log.Infof("Starting container %s", container.Name)
 	dockerClient.StartContainer(container.Name, nil)
 }
 
