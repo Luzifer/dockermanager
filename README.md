@@ -10,7 +10,6 @@ The intention of this project is to have a running daemon on a [docker](https://
 ## Requirements
 
 - One or more host servers with latest [lxc-docker](https://docs.docker.com/installation/ubuntulinux/)
-- A [serf](http://www.serfdom.io/)-agent running on each host and connected to one gossip-network
 - A config file or config URL to serve the configuration from
 - Docker daemon listening on tcp port
 - The dockermanager set up
@@ -29,8 +28,6 @@ Usage of ./dockermanager:
       --docker-host="tcp://192.168.59.103:2376": Connection method to the docker server
       --fullHost[=true]: Manage all containers on host
       --refreshInterval=30: fetch new images every <N> minutes
-      --serfAddress="127.0.0.1:7373": Address of the serf agent to connect to
-      --standalone[=false]: Do not use Serf to talk to other hosts
 ```
 
 ### Configuration file
@@ -39,7 +36,7 @@ The configuration is written in YAML format and reloaded regulary by the daemon:
 
 - `container-name`: Name of the container on the host. Needs to be unique
   - `command`: Override CMD value set by Dockerfile
-  - `hosts`: Array of hostnames (serf node names) to deploy the container to or `ALL`
+  - `hosts`: Array of hostnames to deploy the container to or `ALL`
   - `image`: Name of the image `registry` or `luzifer/jenkins` or `my.registry.com:5000/secret`
   - `tag`: Tag for the image, probably `latest`
   - `links`: Links to other containers in format `othercontainername:alias`

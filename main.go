@@ -15,16 +15,15 @@ import (
 )
 
 var (
-	serfElector       *serfMasterElector
-	actionTimer       *time.Timer
-	remoteActionTimer *time.Timer
-	cleanupTimer      *time.Timer
-	configTimer       *time.Timer
-	dockerClient      *docker.Client
-	cfg               *config.Config
-	authConfig        *docker.AuthConfigurations
-	params            *dockerManagerParams
-	configReloadChan  = make(chan os.Signal, 1)
+	actionTimer      *time.Timer
+	cleanupTimer     *time.Timer
+	configTimer      *time.Timer
+	dockerClient     *docker.Client
+	cfg              *config.Config
+	authConfig       *docker.AuthConfigurations
+	params           *dockerManagerParams
+	configReloadChan = make(chan os.Signal, 1)
+	hostname         string
 )
 
 // #### CONFIG ####
@@ -51,16 +50,11 @@ func main() {
 
 	signal.Notify(configReloadChan, syscall.SIGHUP)
 
-	serfElector = newSerfMasterElector()
-	if !params.StandAlone {
-		go serfElector.Run(params.SerfAddress)
+	var err error
+	if hostname, err = os.Hostname(); err != nil {
+		log.Fatalf("Unable to determine hostname: %s", err)
 	}
 
-	// Create a timer but stop it immediately for later usage in remote actions
-	remoteActionTimer = time.NewTimer(time.Second * 60)
-	remoteActionTimer.Stop()
-
-	var err error
 	if params.DockerCertDir == "" {
 		dockerClient, err = docker.NewClient(params.DockerHost)
 	} else {
@@ -107,22 +101,8 @@ func main() {
 
 	c.Start()
 
-	for {
-		select {
-		case masterState := <-serfElector.MasterState:
-			if masterState {
-				// Give the program 60s before taking actions
-				remoteActionTimer.Reset(time.Second * 60)
-				log.Print("Enabled remote action scheduling")
-			} else {
-				remoteActionTimer.Stop()
-				log.Print("Disabled remote actions scheduling")
-			}
-		case <-configReloadChan:
-			reloadConfig(params)
-		case <-remoteActionTimer.C:
-			// TODO: Implement remote action scheduling
-		}
+	for range configReloadChan {
+		reloadConfig(params)
 	}
 
 }

@@ -68,7 +68,7 @@ func removeNotRequiredImages() {
 
 	required := []string{}
 	for _, v := range *cfg {
-		if str.StringInSlice(serfElector.MyName, v.Hosts) || str.StringInSlice("ALL", v.Hosts) {
+		if str.StringInSlice(hostname, v.Hosts) || str.StringInSlice("ALL", v.Hosts) {
 			required = append(required, fmt.Sprintf("%s:%s", v.Image, v.Tag))
 		}
 	}
@@ -93,7 +93,7 @@ func removeNotRequiredImages() {
 
 func refreshImages() {
 	for _, v := range *cfg {
-		if str.StringInSlice(serfElector.MyName, v.Hosts) || str.StringInSlice("ALL", v.Hosts) {
+		if str.StringInSlice(hostname, v.Hosts) || str.StringInSlice("ALL", v.Hosts) {
 			pullImage(v.Image, v.Tag)
 		}
 	}
@@ -226,7 +226,7 @@ func listRunningContainers() ([]docker.APIContainers, error) {
 func getExpectedRunningNames() []string {
 	expectedRunning := []string{}
 	for name, containerCfg := range *cfg {
-		if containerCfg.ShouldBeRunning(serfElector.MyName, lastStartContainerCall) {
+		if containerCfg.ShouldBeRunning(hostname, lastStartContainerCall) {
 			expectedRunning = append(expectedRunning, name)
 		}
 	}
