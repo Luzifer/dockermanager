@@ -35,12 +35,13 @@ I'm managing a handfull of servers running as single nodes and that's where I'm 
 ```bash
 # ./dockermanager --help
 Usage of ./dockermanager:
-  -c, --config="config.yaml": Config file or URL to read the config from
-      --configInterval=10: Sleep time in minutes to wait between config reloads
-      --docker-certs="": Directory containing cert.pem, key.pem, ca.pem for the registry
-      --docker-host="tcp://192.168.59.103:2376": Connection method to the docker server
-      --fullHost[=true]: Manage all containers on host
-      --refreshInterval=30: fetch new images every <N> minutes
+  -c, --config string         Config file or URL to read the config from (default "config.yaml")
+      --configInterval int    Sleep time in minutes to wait between config reloads (default 10)
+      --docker-certs string   Directory containing cert.pem, key.pem, ca.pem for the registry
+      --docker-host string    Connection method to the docker server (default "unix:///var/run/docker.sock")
+      --fullHost              Manage all containers on host (default true)
+      --log-level string      Set log level (debug, info, warning, error) (default "info")
+      --refreshInterval int   fetch new images every <N> minutes (default 30)
 ```
 
 ### Configuration file
