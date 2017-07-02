@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/Luzifer/dockermanager",
-	"GoVersion": "go1.7",
-	"GodepVersion": "v74",
+	"GoVersion": "go1.8",
+	"GodepVersion": "v79",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Luzifer/go_helpers/str",
@@ -22,14 +22,6 @@
 			"ImportPath": "github.com/Sirupsen/logrus",
 			"Comment": "v0.10.0-38-g3ec0642",
 			"Rev": "3ec0642a7fb6488f65b06f9040adc67e3990296a"
-		},
-		{
-			"ImportPath": "github.com/armon/go-metrics",
-			"Rev": "6c5fa0d8f48f4661c9ba8709799c88d425ad20f0"
-		},
-		{
-			"ImportPath": "github.com/cenkalti/backoff",
-			"Rev": "9831e1e25c874e0a0601b6dc43641071414eec7a"
 		},
 		{
 			"ImportPath": "github.com/cnf/structhash",
@@ -120,34 +112,8 @@
 			"Rev": "f11b05a99bc1ddf41d2a61e1fcb150568c87c964"
 		},
 		{
-			"ImportPath": "github.com/gonuts/binary",
-			"Rev": "21c37b530bec7c512af0208bfb15f34400301682"
-		},
-		{
 			"ImportPath": "github.com/hashicorp/go-cleanhttp",
 			"Rev": "ad28ea4487f05916463e2423a55166280e8254b5"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/go-msgpack/codec",
-			"Rev": "fa3f63826f7c23912c15263591e65d54d080b458"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/logutils",
-			"Rev": "0dc08b1671f34c4250ce212759ebd880f743d883"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/memberlist",
-			"Rev": "a93fbd426dd831f5a66db3adc6a5ffa6f44cc60a"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/serf/client",
-			"Comment": "v0.6.4-30-gbd46067",
-			"Rev": "bd4606772d521698229b6bee03ccbbe9c2800885"
-		},
-		{
-			"ImportPath": "github.com/hashicorp/serf/serf",
-			"Comment": "v0.6.4-30-gbd46067",
-			"Rev": "bd4606772d521698229b6bee03ccbbe9c2800885"
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runc/libcontainer/system",
@@ -183,6 +149,10 @@
 		{
 			"ImportPath": "golang.org/x/sys/windows",
 			"Rev": "8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9"
+		},
+		{
+			"ImportPath": "gopkg.in/validator.v2",
+			"Rev": "07ffaad256c8e957050ad83d6472eb97d785013d"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
