@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"path"
 	"syscall"
-	"time"
 
 	"github.com/Luzifer/dockermanager/config"
 	"github.com/fsouza/go-dockerclient"
@@ -15,9 +14,6 @@ import (
 )
 
 var (
-	actionTimer      *time.Timer
-	cleanupTimer     *time.Timer
-	configTimer      *time.Timer
 	dockerClient     *docker.Client
 	cfg              *config.Config
 	authConfig       *docker.AuthConfigurations
@@ -46,11 +42,13 @@ func reloadConfig(params *dockerManagerParams) {
 // #### MAIN ####
 
 func main() {
-	params = getStartupParameters()
+	var err error
+	if params, err = getStartupParameters(); err != nil {
+		log.Fatalf("Unable to parse CLI parameters: %s", err)
+	}
 
 	signal.Notify(configReloadChan, syscall.SIGHUP)
 
-	var err error
 	if hostname, err = os.Hostname(); err != nil {
 		log.Fatalf("Unable to determine hostname: %s", err)
 	}

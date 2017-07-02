@@ -14,10 +14,7 @@ type dockerManagerParams struct {
 	ManageFullHost bool `default:"true" flag:"fullHost" description:"Manage all containers on host"`
 }
 
-func getStartupParameters() *dockerManagerParams {
+func getStartupParameters() (*dockerManagerParams, error) {
 	cfg := &dockerManagerParams{}
-
-	rconfig.Parse(cfg)
-
-	return cfg
+	return cfg, rconfig.ParseAndValidate(cfg)
 }

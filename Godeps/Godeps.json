@@ -10,8 +10,8 @@
 		},
 		{
 			"ImportPath": "github.com/Luzifer/rconfig",
-			"Comment": "v1.1.0",
-			"Rev": "c27bd3a64b5b19556914d9fec69922cf3852d585"
+			"Comment": "v1.2.0",
+			"Rev": "7aef1d393c1e2d0758901853b59981c7adc67c7e"
 		},
 		{
 			"ImportPath": "github.com/Microsoft/go-winio",
@@ -157,6 +157,10 @@
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
 			"Rev": "31c299268d302dd0aa9a0dcf765a3d58971ac83f"
+		},
+		{
+			"ImportPath": "gopkg.in/validator.v2",
+			"Rev": "07ffaad256c8e957050ad83d6472eb97d785013d"
 		}
 	]
 }

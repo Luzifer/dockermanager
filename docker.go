@@ -19,6 +19,8 @@ const (
 	labelIsScheduled     = "io.luzifer.dockermanager.scheduler"
 	labelDockerProxySlug = "io.luzifer.dockerproxy.slug"
 	labelDockerProxyPort = "io.luzifer.dockerproxy.port"
+
+	strTrue = "true"
 )
 
 var (
@@ -153,15 +155,15 @@ func bootContainer(name string, cfg config.ContainerConfig) {
 		}
 	}
 	labels[labelConfigHash] = cs
-	labels[labelIsManaged] = "true"
+	labels[labelIsManaged] = strTrue
 
 	if cfg.StartTimes != "" {
-		labels[labelIsScheduled] = "true"
+		labels[labelIsScheduled] = strTrue
 	}
 
 	if cfg.DockerProxy.Slug != "" {
 		labels[labelDockerProxySlug] = cfg.DockerProxy.Slug
-		labels[labelDockerProxyPort] = strconv.FormatInt(int64(cfg.DockerProxy.Port), 10)
+		labels[labelDockerProxyPort] = strconv.Itoa(cfg.DockerProxy.Port)
 	}
 
 	volumes, binds := parseMounts(cfg.Volumes)
@@ -253,7 +255,7 @@ func stopUnexpectedContainers() {
 			allowed = true
 		}
 
-		if containerDetails.Config.Labels[labelIsScheduled] == "true" {
+		if containerDetails.Config.Labels[labelIsScheduled] == strTrue {
 			// If it's a scheduled container keep it running
 			allowed = true
 		}
