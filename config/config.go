@@ -3,11 +3,12 @@ package config
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Luzifer/go_helpers/str"
+	log "github.com/Sirupsen/logrus"
 	"github.com/cnf/structhash"
 	"github.com/robfig/cron"
 	"gopkg.in/yaml.v2"
@@ -45,7 +46,7 @@ func LoadConfigFromURL(url string) (*Config, error) {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Print(err)
+		log.Errorf("Unable to fetch config from URL: %s", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -53,7 +54,7 @@ func LoadConfigFromURL(url string) (*Config, error) {
 
 	err = yaml.Unmarshal(body, &result)
 	if err != nil {
-		log.Print(err)
+		log.Errorf("Unable to parse config: %s", err)
 		return nil, err
 	}
 
@@ -66,13 +67,13 @@ func LoadConfigFromFile(filename string) (*Config, error) {
 
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Print(err)
+		log.Errorf("Unabel to read config from file %q: %s", filename, err)
 		return nil, err
 	}
 
 	err = yaml.Unmarshal(body, &result)
 	if err != nil {
-		log.Print(err)
+		log.Errorf("Unable to parse config: %s", err)
 		return nil, err
 	}
 
@@ -94,7 +95,7 @@ func (c ContainerConfig) ShouldBeRunning(hostname string, lastStartContainerCall
 	schedule, err := cron.Parse("0 " + c.StartTimes)
 	if err != nil {
 		// Warn about invalid schedule but never start this.
-		log.Printf("Invalid start_times: %s", err)
+		log.Warnf("Invalid start_times: %s", err)
 		return false
 	}
 
@@ -113,4 +114,38 @@ func (c ContainerConfig) ShouldBeRunning(hostname string, lastStartContainerCall
 // Checksum generates a hash over the ContainerConfig to compare it to older versions
 func (c ContainerConfig) Checksum() (string, error) {
 	return fmt.Sprintf("%x", structhash.Sha1(c, 1)), nil
+}
+
+// UpdateAllowedAt checks whether a container may be updated at the given time
+func (c ContainerConfig) UpdateAllowedAt(pit time.Time) bool {
+	if len(c.UpdateTimes) == 0 {
+		return true
+	}
+
+	for _, timeFrame := range c.UpdateTimes {
+		times := strings.Split(timeFrame, "-")
+		if len(times) != 2 {
+			continue
+		}
+
+		day := pit.Format("2006-01-02")
+		timezone := pit.Format("-0700")
+
+		t1, et1 := time.Parse("2006-01-02 15:04 -0700", fmt.Sprintf("%s %s %s", day, times[0], timezone))
+		t2, et2 := time.Parse("2006-01-02 15:04 -0700", fmt.Sprintf("%s %s %s", day, times[1], timezone))
+		if et1 != nil || et2 != nil {
+			log.Errorf("Timeframe '%s' is invalid. Format is HH:MM-HH:MM", timeFrame)
+			continue
+		}
+
+		if t2.Before(t1) {
+			log.Warnf("Timeframe '%s' will never work. Second time has to be bigger.", timeFrame)
+		}
+
+		if t1.Before(pit) && t2.After(pit) {
+			return true
+		}
+	}
+
+	return false
 }

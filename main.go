@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"path"
 	"syscall"
 
 	"github.com/Luzifer/dockermanager/config"
+	log "github.com/Sirupsen/logrus"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/robfig/cron"
 )
@@ -24,7 +24,7 @@ var (
 
 // #### CONFIG ####
 func reloadConfig(params *dockerManagerParams) {
-	log.Print("Loading config...")
+	log.Debugf("Loading config...")
 	var loadErr error
 
 	var newCfg *config.Config
@@ -63,7 +63,9 @@ func main() {
 			path.Join(params.DockerCertDir, "ca.pem"),
 		)
 	}
-	orFail(err)
+	if err != nil {
+		log.Fatalf("Unable to create Docker client: %s", err)
+	}
 
 	// Load local .dockercfg
 	authConfig = &docker.AuthConfigurations{}
@@ -71,7 +73,7 @@ func main() {
 	if err == nil {
 		authConfig = auth
 	} else {
-		log.Printf("Could not read authconfig: %s\n", err)
+		log.Warnf("Could not read authconfig: %s\n", err)
 	}
 
 	c := cron.New()
