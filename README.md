@@ -1,15 +1,11 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/Luzifer/dockermanager)](https://goreportcard.com/report/github.com/Luzifer/dockermanager)
-[![License: Apache v2.0](https://badge.luzifer.io/v1/badge?color=5d79b5&title=license&text=Apache+v2.0)](http://www.apache.org/licenses/LICENSE-2.0)
-[![GoDoc reference](http://badge.luzifer.io/v1/badge?color=5d79b5&title=godoc&text=reference)](https://godoc.org/github.com/Luzifer/dockermanager/config)
+![](https://badges.fyi/github/license/Luzifer/dockermanager)
+![](https://badges.fyi/github/downloads/Luzifer/dockermanager)
+![](https://badges.fyi/github/latest-release/Luzifer/dockermanager)
 
 # luzifer / dockermanager
 
 The intention of this project is to have a running daemon on a [docker](https://www.docker.com/) host server which is able to realize a configuration of docker containers. For this it manages all containers and images on the docker host. This includes starting and stopping containers which are or are not defined by the configuration file.
-
-## Missing / Planned Features
-
-- Support load balancing / distribution of containers to create spread load on all servers
-  - For this feature the serf master-election was built in. Currently it is not used.
 
 ## Requirements
 
@@ -97,6 +93,6 @@ scheduletest:
   start_times: "*/2 * * * *"
 ```
 
-## Development Status
+----
 
-Current version is marked as 0.x.x and for this it is to be considered unstable. As soon as the load balancing is implemented I will move to the 1.x.x version and the app will be stable within the major version.
+![](https://d2o84fseuhwkxk.cloudfront.net/dockermanager.svg)
