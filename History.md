@@ -1,3 +1,13 @@
+# 1.0.0 / 2017-07-02
+
+- Clustering through serf is no longer supported which means the corresponding CLI flags are removed in this version. The `hosts` list is still supported and can be used to start different container constellations on different hosts from one configuration file.
+- Native support for dockerproxy has been removed as dockerproxy is no longer supported and end-of-life. As an alternative plese take a look at [nginx-letsencrypt](https://github.com/Luzifer/nginx-letsencrypt) which is more flexible and supports for example web-sockets which is not possible in dockerproxy.
+
+  * Breaking: Remove native support for dockerproxy
+  * Breaking: Remove serf cluster logic
+  * Improve logging
+  * Fix: Remove several linter warnings
+
 # 0.21.0 / 2017-07-02
 
   * Improve automated fetching of non-existent images
