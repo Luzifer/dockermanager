@@ -109,7 +109,7 @@
 		},
 		{
 			"ImportPath": "github.com/fsouza/go-dockerclient",
-			"Rev": "f11b05a99bc1ddf41d2a61e1fcb150568c87c964"
+			"Rev": "4bc6a18363f79b32c26f92e2e6d8bfd30d79a770"
 		},
 		{
 			"ImportPath": "github.com/hashicorp/go-cleanhttp",
