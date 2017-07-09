@@ -33,7 +33,7 @@ type ContainerConfig struct {
 	Labels          map[string]string `yaml:"labels" json:"labels"`
 	AddCapabilities []string          `yaml:"cap_add" json:"cap_add"`
 
-	nextRun *time.Time
+	nextRun *time.Time `hash:"-"`
 }
 
 // PortConfig maps container ports to host ports
