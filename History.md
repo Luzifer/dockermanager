@@ -1,3 +1,9 @@
+# 1.2.0-rc3 / 2017-07-09
+
+  * Add deadlock detection during RC builds
+  * Fix: Stating this once is enough
+  * Do not take private fields in account for hashes
+
 # 1.2.0-rc2 / 2017-07-09
 
   * Windows is no longer supported by runc
