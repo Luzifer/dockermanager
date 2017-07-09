@@ -17,6 +17,10 @@ import (
 const (
 	imageManagerInterval     = time.Minute
 	containerManagerInterval = time.Minute
+
+	lockConfig     = "config"
+	lockContainers = "containers"
+	lockImages     = "images"
 )
 
 var (
@@ -56,7 +60,7 @@ type scheduler struct {
 	knownImages          map[string]image
 	listener             chan *docker.APIEvents
 
-	deadlock.RWMutex
+	locks map[string]*deadlock.RWMutex
 }
 
 func newScheduler(hostname string, client *docker.Client, authConfig *docker.AuthConfigurations, cfg config.Config, imageRefreshInterval time.Duration) (*scheduler, error) {
@@ -115,8 +119,8 @@ func (s *scheduler) listen() {
 /* Public Interface */
 
 func (s *scheduler) UpdateConfiguration(cfg config.Config) {
-	s.Lock()
-	defer s.Unlock()
+	s.lock(lockConfig, true)
+	defer s.unlock(lockConfig, true)
 
 	s.config = cfg
 }
@@ -127,6 +131,30 @@ func (s *scheduler) EnableImageCleanup(minAge time.Duration) {
 }
 
 /* Private Interface */
+
+func (s *scheduler) lock(topic string, rw bool) {
+	if _, ok := s.locks[topic]; !ok {
+		s.locks[topic] = new(deadlock.RWMutex)
+	}
+
+	if rw {
+		s.locks[topic].Lock()
+	} else {
+		s.locks[topic].RLock()
+	}
+}
+
+func (s *scheduler) unlock(topic string, rw bool) {
+	if _, ok := s.locks[topic]; !ok {
+		s.locks[topic] = new(deadlock.RWMutex)
+	}
+
+	if rw {
+		s.locks[topic].Unlock()
+	} else {
+		s.locks[topic].RUnlock()
+	}
+}
 
 func (s *scheduler) collectInitialInformation() error {
 	imgs, err := s.client.ListImages(docker.ListImagesOptions{
@@ -160,8 +188,8 @@ func (s *scheduler) collectInitialInformation() error {
 
 func (s *scheduler) refreshImageInformation(id string, remove bool) error {
 	if remove {
-		s.Lock()
-		defer s.Unlock()
+		s.lock(lockImages, true)
+		defer s.unlock(lockImages, true)
 		delete(s.knownImages, id)
 		return nil
 	}
@@ -171,8 +199,8 @@ func (s *scheduler) refreshImageInformation(id string, remove bool) error {
 		return fmt.Errorf("Unable to inspect image %q: %s", id, err)
 	}
 
-	s.Lock()
-	defer s.Unlock()
+	s.lock(lockImages, true)
+	defer s.unlock(lockImages, true)
 	s.knownImages[img.ID] = image{
 		Image:           img,
 		LastKnownUpdate: time.Now(),
@@ -183,8 +211,8 @@ func (s *scheduler) refreshImageInformation(id string, remove bool) error {
 
 func (s *scheduler) refreshContainerInformation(id string, remove bool) error {
 	if remove {
-		s.Lock()
-		defer s.Unlock()
+		s.lock(lockContainers, true)
+		defer s.unlock(lockContainers, true)
 		delete(s.knownContainers, id)
 		return nil
 	}
@@ -202,17 +230,16 @@ func (s *scheduler) refreshContainerInformation(id string, remove bool) error {
 	_, c.IsScheduled = cont.Config.Labels[labelIsScheduled]
 	c.Checksum = cont.Config.Labels[labelConfigHash]
 
-	s.Lock()
-	defer s.Unlock()
+	s.lock(lockContainers, true)
+	defer s.unlock(lockContainers, true)
 	s.knownContainers[cont.ID] = c
 
 	return nil
 }
 
 func (s *scheduler) getContainerByName(name string) *docker.Container {
-	//s.RLock()
-	//defer s.RUnlock()
-	// Locking disabled for testing
+	s.lock(lockContainers, false)
+	defer s.unlock(lockContainers, false)
 
 	for _, cont := range s.knownContainers {
 		if strings.TrimLeft(cont.Container.Name, "/") == name {
@@ -224,8 +251,8 @@ func (s *scheduler) getContainerByName(name string) *docker.Container {
 }
 
 func (s *scheduler) getImageByName(name string) *docker.Image {
-	s.RLock()
-	defer s.RUnlock()
+	s.lock(lockImages, false)
+	defer s.unlock(lockImages, false)
 
 	for _, img := range s.knownImages {
 		if str.StringInSlice(name, img.Image.RepoTags) {
@@ -284,7 +311,7 @@ func (s *scheduler) handleImageEvent(evt *docker.APIEvents) error {
 func (s *scheduler) imageManager() {
 	for range time.Tick(imageManagerInterval) {
 
-		s.RLock()
+		s.lock(lockImages, false)
 		for id, img := range s.knownImages {
 
 			myName := ""
@@ -310,7 +337,7 @@ func (s *scheduler) imageManager() {
 			}
 
 		}
-		s.RUnlock()
+		s.unlock(lockImages, false)
 
 	}
 }
@@ -327,8 +354,8 @@ func (s *scheduler) containerManager() {
 }
 
 func (s *scheduler) removeDeadContainers() {
-	s.RLock()
-	defer s.RUnlock()
+	s.lock(lockContainers, false)
+	defer s.unlock(lockContainers, false)
 
 	for id, cont := range s.knownContainers {
 		if cont.Container.State.Running {
@@ -362,8 +389,8 @@ func (s *scheduler) removeDeadContainers() {
 }
 
 func (s *scheduler) stopUnexpectedContainers() {
-	s.RLock()
-	defer s.RUnlock()
+	s.lock(lockContainers, false)
+	defer s.unlock(lockContainers, false)
 
 	for id, cont := range s.knownContainers {
 		if !cont.Container.State.Running {
@@ -393,8 +420,8 @@ func (s *scheduler) stopUnexpectedContainers() {
 }
 
 func (s *scheduler) stopContainersWithUpdates() {
-	s.RLock()
-	defer s.RUnlock()
+	s.lock(lockContainers, false)
+	defer s.unlock(lockContainers, false)
 
 	for id, cont := range s.knownContainers {
 		if !cont.Container.State.Running {
@@ -442,8 +469,8 @@ func (s *scheduler) stopContainersWithUpdates() {
 }
 
 func (s *scheduler) startContainers() {
-	s.RLock()
-	defer s.RUnlock()
+	s.lock(lockConfig, false)
+	defer s.unlock(lockConfig, false)
 
 	chain, err := s.config.GetDependencyChain()
 	if err != nil {
