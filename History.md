@@ -1,3 +1,7 @@
+# 1.2.0-rc1 / 2017-07-09
+
+  * Complete rewrite of the scheduler logic
+
 # 1.1.0 / 2017-07-02
 
   * Change default docker-host to Unix socket
