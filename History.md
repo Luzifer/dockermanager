@@ -1,3 +1,7 @@
+# 1.2.0-rc5 / 2017-07-09
+
+  * Fix: Maps need to be initialized
+
 # 1.2.0-rc4 / 2017-07-09
 
   * Split locks into different lock topics
