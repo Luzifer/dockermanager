@@ -461,13 +461,45 @@ func (s *scheduler) stopContainersWithUpdates() {
 
 		if stopIt {
 			go func(id string, ccfg *config.ContainerConfig, cont container) {
-				stopTime := uint(math.Max(5, float64(ccfg.StopTimeout)))
-				if err := s.client.StopContainer(id, stopTime); err != nil {
+				if err := s.stopContainerGraph(strings.TrimLeft(cont.Container.Name, "/"), true); err != nil {
 					log.Errorf("Unable to stop container %q: %s", cont.Container.Name, err)
 				}
 			}(id, ccfg, cont)
 		}
 	}
+}
+
+func (s *scheduler) stopContainerGraph(name string, isBaseLevel bool) error {
+	if isBaseLevel {
+		// Only aquire one lock on the config to prevent deadlocks
+		s.lock(lockConfig, false)
+		defer s.unlock(lockConfig, false)
+	}
+
+	ccfg, ok := s.config[name]
+	if !ok {
+		return fmt.Errorf("No container configuration found")
+	}
+
+	dependingOnMe := []string{}
+	for n, c := range s.config {
+		if str.StringInSlice(name, c.GetDependencies()) {
+			dependingOnMe = append(dependingOnMe, n)
+		}
+	}
+
+	for _, d := range dependingOnMe {
+		if err := s.stopContainerGraph(d, false); err != nil {
+			return err
+		}
+	}
+
+	s.lock(lockContainers, false)
+	cont := s.getContainerByName(name)
+	s.unlock(lockContainers, false)
+
+	stopTime := uint(math.Max(5, float64(ccfg.StopTimeout)))
+	return s.client.StopContainer(cont.ID, stopTime)
 }
 
 func (s *scheduler) startContainers() {
