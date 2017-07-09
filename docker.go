@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/Luzifer/dockermanager/config"
-	log "github.com/sirupsen/logrus"
 	"github.com/fsouza/go-dockerclient"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -50,7 +50,6 @@ func pullImage(image, tag string) {
 		}
 	}
 
-	log.Debugf("Refreshing repo %s:%s...", image, tag)
 	if err := dockerClient.PullImage(docker.PullImageOptions{
 		Repository: image,
 		Tag:        tag,
