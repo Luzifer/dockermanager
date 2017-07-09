@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"math"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/Luzifer/dockermanager/config"
 	"github.com/Luzifer/go_helpers/str"
-	log "github.com/sirupsen/logrus"
 	docker "github.com/fsouza/go-dockerclient"
+	deadlock "github.com/sasha-s/go-deadlock"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -56,7 +56,7 @@ type scheduler struct {
 	knownImages          map[string]image
 	listener             chan *docker.APIEvents
 
-	sync.RWMutex
+	deadlock.RWMutex
 }
 
 func newScheduler(hostname string, client *docker.Client, authConfig *docker.AuthConfigurations, cfg config.Config, imageRefreshInterval time.Duration) (*scheduler, error) {

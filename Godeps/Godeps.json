@@ -218,6 +218,10 @@
 			"Rev": "5c73abbe75d73352bf966c9c27abdd6daeeaad69"
 		},
 		{
+			"ImportPath": "github.com/petermattis/goid",
+			"Rev": "0ded85884ba5c4c9267fcd5a149061f7c3455eee"
+		},
+		{
 			"ImportPath": "github.com/pkg/errors",
 			"Comment": "v0.8.0-5-gc605e28",
 			"Rev": "c605e284fe17294bda444b34710735b29d1a9d90"
@@ -226,6 +230,11 @@
 			"ImportPath": "github.com/robfig/cron",
 			"Comment": "v1-58-g736158d",
 			"Rev": "736158dc09e10f1911ca3a1e1b01f11b566ce5db"
+		},
+		{
+			"ImportPath": "github.com/sasha-s/go-deadlock",
+			"Comment": "v0.1.0-2-g3410008",
+			"Rev": "341000892f3dd25f440e6231e8533eb3688ed7ec"
 		},
 		{
 			"ImportPath": "github.com/sirupsen/logrus",
