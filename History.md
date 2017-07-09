@@ -1,3 +1,8 @@
+# 1.2.0-rc6 / 2017-07-09
+
+  * Pull multiple images at the same time
+  * Ensure all containers depending are stopped before the dependency
+
 # 1.2.0-rc5 / 2017-07-09
 
   * Fix: Maps need to be initialized
