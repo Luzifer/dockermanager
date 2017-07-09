@@ -333,9 +333,14 @@ func (s *scheduler) imageManager() {
 				}
 			}
 
+			limit := make(chan struct{}, 10)
 			if myName != "" && img.LastKnownUpdate.Add(s.imageRefreshInterval).Before(time.Now()) {
+				limit <- struct{}{}
 				log.Debugf("Refreshing image %q...", myName)
-				go pullImage(docker.ParseRepositoryTag(myName))
+				go func(myName string, limit chan struct{}) {
+					pullImage(docker.ParseRepositoryTag(myName))
+					<-limit
+				}(myName, limit)
 			}
 
 		}
