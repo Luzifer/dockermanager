@@ -74,6 +74,8 @@ func newScheduler(hostname string, client *docker.Client, authConfig *docker.Aut
 		knownContainers:      make(map[string]container),
 		knownImages:          make(map[string]image),
 		listener:             make(chan *docker.APIEvents, 10),
+
+		locks: make(map[string]*deadlock.RWMutex),
 	}
 
 	if err := s.collectInitialInformation(); err != nil {
