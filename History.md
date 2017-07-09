@@ -1,3 +1,9 @@
+# 1.2.0-rc2 / 2017-07-09
+
+  * Windows is no longer supported by runc
+  * Fix naming of logrus package
+  * Update all the dependencies 🙈
+
 # 1.2.0-rc1 / 2017-07-09
 
   * Complete rewrite of the scheduler logic
