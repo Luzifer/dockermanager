@@ -335,7 +335,7 @@ func (s *scheduler) imageManager() {
 
 			if myName != "" && img.LastKnownUpdate.Add(s.imageRefreshInterval).Before(time.Now()) {
 				log.Debugf("Refreshing image %q...", myName)
-				pullImage(docker.ParseRepositoryTag(myName))
+				go pullImage(docker.ParseRepositoryTag(myName))
 			}
 
 		}
