@@ -88,8 +88,10 @@ func writeValue(buf *bytes.Buffer, val reflect.Value, fltr structFieldFilter) {
 		buf.WriteByte('"')
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		buf.WriteString(strconv.FormatInt(val.Int(), 10))
-	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		buf.WriteString(strconv.FormatUint(val.Uint(), 10))
+	case reflect.Float32, reflect.Float64:
+		buf.WriteString(strconv.FormatFloat(val.Float(), 'E', -1, 64))
 	case reflect.Bool:
 		if val.Bool() {
 			buf.WriteByte('t')
@@ -164,6 +166,8 @@ func writeValue(buf *bytes.Buffer, val reflect.Value, fltr structFieldFilter) {
 			writeValue(buf, items[i].value, fltr)
 		}
 		buf.WriteByte('}')
+	case reflect.Interface:
+		writeValue(buf, reflect.ValueOf(val.Interface()), fltr)
 	default:
 		buf.WriteString(val.String())
 	}
@@ -171,7 +175,7 @@ func writeValue(buf *bytes.Buffer, val reflect.Value, fltr structFieldFilter) {
 
 func formatValue(val reflect.Value, fltr structFieldFilter) string {
 	if val.Kind() == reflect.String {
-		return "\"" + val.Interface().(string) + "\""
+		return "\"" + val.String() + "\""
 	}
 
 	var buf bytes.Buffer
