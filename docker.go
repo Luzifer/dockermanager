@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/Luzifer/dockermanager/config"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/fsouza/go-dockerclient"
 )
 

@@ -10,7 +10,7 @@ import (
 
 	"github.com/Luzifer/dockermanager/config"
 	"github.com/Luzifer/go_helpers/str"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	docker "github.com/fsouza/go-dockerclient"
 )
 

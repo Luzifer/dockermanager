@@ -31,11 +31,6 @@
 			"Rev": "cd527374f1e5bff4938207604a14f2e38a9cf512"
 		},
 		{
-			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v1.0.0-4-g59d0ca4",
-			"Rev": "59d0ca41e5faad81cac03f7a7d84ba80d9cc9673"
-		},
-		{
 			"ImportPath": "github.com/cnf/structhash",
 			"Rev": "7710f1f78fb9c581deeeab57ecfb7978901b36bc"
 		},
@@ -231,6 +226,11 @@
 			"ImportPath": "github.com/robfig/cron",
 			"Comment": "v1-58-g736158d",
 			"Rev": "736158dc09e10f1911ca3a1e1b01f11b566ce5db"
+		},
+		{
+			"ImportPath": "github.com/sirupsen/logrus",
+			"Comment": "v1.0.0-4-g59d0ca4",
+			"Rev": "59d0ca41e5faad81cac03f7a7d84ba80d9cc9673"
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",
