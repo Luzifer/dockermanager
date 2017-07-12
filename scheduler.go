@@ -325,7 +325,11 @@ func (s *scheduler) imageManager() {
 
 			if s.cleanupActive {
 				if myName == "" && img.Image.Created.Add(s.cleanupMinAge).Before(time.Now()) {
-					log.Debugf("Image %q is not expected to be there and is %s old, removing...", img.Image.RepoTags[0], time.Since(img.Image.Created))
+					imageName := id
+					if len(img.Image.RepoTags) > 0 {
+						imageName = img.Image.RepoTags[0]
+					}
+					log.Debugf("Image %q is not expected to be there and is %s old, removing...", imageName, time.Since(img.Image.Created))
 					if err := s.client.RemoveImage(id); err != nil {
 						log.Errorf("Unable to delete image %q: %s", id, err)
 					}
