@@ -1,3 +1,8 @@
+# 1.2.0-rc7 / 2017-07-12
+
+  * Fix: There might be no repo tags present
+  * Limit concurrent pulls to 10
+
 # 1.2.0-rc6 / 2017-07-09
 
   * Pull multiple images at the same time
