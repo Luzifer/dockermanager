@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Luzifer/dockermanager/config"
@@ -21,6 +22,7 @@ const (
 	lockConfig     = "config"
 	lockContainers = "containers"
 	lockImages     = "images"
+	lockPullDict   = "pullDict"
 )
 
 var (
@@ -60,7 +62,9 @@ type scheduler struct {
 	knownImages          map[string]image
 	listener             chan *docker.APIEvents
 
-	locks map[string]*deadlock.RWMutex
+	locks     map[string]*deadlock.RWMutex
+	locksLock sync.Mutex
+	pullLock  map[string]bool
 }
 
 func newScheduler(hostname string, client *docker.Client, authConfig *docker.AuthConfigurations, cfg config.Config, imageRefreshInterval time.Duration) (*scheduler, error) {
@@ -75,7 +79,8 @@ func newScheduler(hostname string, client *docker.Client, authConfig *docker.Aut
 		knownImages:          make(map[string]image),
 		listener:             make(chan *docker.APIEvents, 10),
 
-		locks: make(map[string]*deadlock.RWMutex),
+		locks:    make(map[string]*deadlock.RWMutex),
+		pullLock: make(map[string]bool),
 	}
 
 	if err := s.collectInitialInformation(); err != nil {
@@ -136,7 +141,9 @@ func (s *scheduler) EnableImageCleanup(minAge time.Duration) {
 
 func (s *scheduler) lock(topic string, rw bool) {
 	if _, ok := s.locks[topic]; !ok {
+		s.locksLock.Lock()
 		s.locks[topic] = new(deadlock.RWMutex)
+		s.locksLock.Unlock()
 	}
 
 	if rw {
@@ -342,7 +349,7 @@ func (s *scheduler) imageManager() {
 				limit <- struct{}{}
 				log.Debugf("Refreshing image %q...", myName)
 				go func(myName string, limit chan struct{}) {
-					pullImage(docker.ParseRepositoryTag(myName))
+					s.pullImage(docker.ParseRepositoryTag(myName))
 					<-limit
 				}(myName, limit)
 			}
@@ -465,6 +472,12 @@ func (s *scheduler) stopContainersWithUpdates() {
 		if img := s.getImageByName(ccfg.Image + ":" + ccfg.Tag); img != nil && img.ID != cont.Container.Image {
 			// Image was renewed: Ask it to go
 			log.Infof("Container %s has a new image version.", cont.Container.Name)
+			log.WithFields(log.Fields{
+				"image":     ccfg.Image + ":" + ccfg.Tag,
+				"container": cont.Container.Name,
+				"old":       cont.Container.Image,
+				"new":       img.ID,
+			}).Debugf("Image update")
 			stopIt = true
 		}
 
@@ -529,6 +542,12 @@ func (s *scheduler) startContainers() {
 			continue
 		}
 
+		if s.getImageByName(ccfg.Image+":"+ccfg.Tag) == nil {
+			log.Debugf("Image %q for container %q not found, pulling now.", ccfg.Image+":"+ccfg.Tag, name)
+			s.pullImage(ccfg.Image, ccfg.Tag)
+			continue
+		}
+
 		if cont := s.getContainerByName(name); cont != nil && cont.State.Running {
 			// Is already running
 			continue
@@ -551,5 +570,42 @@ func (s *scheduler) startContainers() {
 		if err := ccfg.UpdateNextRun(); err != nil {
 			log.Errorf("Unable to update next run for container %q: %s", name, err)
 		}
+	}
+}
+
+func (s *scheduler) pullImage(image, tag string) {
+	s.lock(lockPullDict, true)
+	if s.pullLock[image+":"+tag] {
+		log.Debugf("Image %q is already pulling, starting no new pull", image+":"+tag)
+		s.unlock(lockPullDict, true)
+		return
+	}
+	s.pullLock[image+":"+tag] = true
+	s.unlock(lockPullDict, true)
+
+	defer func() {
+		s.lock(lockPullDict, true)
+		s.pullLock[image+":"+tag] = false
+		s.unlock(lockPullDict, true)
+	}()
+
+	auth := docker.AuthConfiguration{}
+
+	reginfo := strings.SplitN(image, "/", 2)
+	if len(reginfo) == 2 {
+		for s, a := range authConfig.Configs {
+			if strings.Contains(s, reginfo[0]) {
+				auth = a
+			}
+		}
+	}
+
+	if err := dockerClient.PullImage(docker.PullImageOptions{
+		Repository: image,
+		Tag:        tag,
+	}, auth); err != nil {
+		log.WithFields(log.Fields{
+			"repo": image + ":" + tag,
+		}).Errorf("An error occurred while image pulling: %s", err)
 	}
 }

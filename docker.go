@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/Luzifer/dockermanager/config"
 	"github.com/fsouza/go-dockerclient"
@@ -17,48 +16,6 @@ const (
 
 	strTrue = "true"
 )
-
-var (
-	pullLock     = map[string]bool{}
-	pullLockLock sync.RWMutex
-)
-
-func pullImage(image, tag string) {
-	pullLockLock.Lock()
-	if pullLock[image+":"+tag] {
-		log.Debugf("Image %q is already pulling, starting no new pull", image+":"+tag)
-		pullLockLock.Unlock()
-		return
-	}
-	pullLock[image+":"+tag] = true
-	pullLockLock.Unlock()
-
-	defer func() {
-		pullLockLock.Lock()
-		pullLock[image+":"+tag] = false
-		pullLockLock.Unlock()
-	}()
-
-	auth := docker.AuthConfiguration{}
-
-	reginfo := strings.SplitN(image, "/", 2)
-	if len(reginfo) == 2 {
-		for s, a := range authConfig.Configs {
-			if strings.Contains(s, reginfo[0]) {
-				auth = a
-			}
-		}
-	}
-
-	if err := dockerClient.PullImage(docker.PullImageOptions{
-		Repository: image,
-		Tag:        tag,
-	}, auth); err != nil {
-		log.WithFields(log.Fields{
-			"repo": image + ":" + tag,
-		}).Errorf("An error occurred while image pulling: %s", err)
-	}
-}
 
 func bootContainer(name string, ccfg *config.ContainerConfig) error {
 	var (
