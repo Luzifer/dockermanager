@@ -1,3 +1,7 @@
+# 1.2.0-rc8 / 2017-07-17
+
+  * Fix: If image is not present pull it before starting a container
+
 # 1.2.0-rc7 / 2017-07-12
 
   * Fix: There might be no repo tags present
