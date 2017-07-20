@@ -330,22 +330,20 @@ func (s *scheduler) imageManager() {
 				}
 			}
 
-			if s.cleanupActive {
-				if myName == "" && img.Image.Created.Add(s.cleanupMinAge).Before(time.Now()) {
-					imageName := id
-					if len(img.Image.RepoTags) > 0 {
-						imageName = img.Image.RepoTags[0]
-					}
-					log.Debugf("Image %q is not expected to be there and is %s old, removing...", imageName, time.Since(img.Image.Created))
-					if err := s.client.RemoveImage(id); err != nil {
-						log.Errorf("Unable to delete image %q: %s", id, err)
-					}
-					continue
+			if ((s.cleanupActive && myName == "") || len(img.Image.RepoTags) == 0) && time.Since(img.Image.Created) > s.cleanupMinAge {
+				imageName := id
+				if len(img.Image.RepoTags) > 0 {
+					imageName = img.Image.RepoTags[0]
 				}
+				log.Debugf("Image %q is not expected to be there and is %s old, removing...", imageName, time.Since(img.Image.Created))
+				if err := s.client.RemoveImage(id); err != nil {
+					log.Errorf("Unable to delete image %q: %s", id, err)
+				}
+				continue
 			}
 
 			limit := make(chan struct{}, 10)
-			if myName != "" && img.LastKnownUpdate.Add(s.imageRefreshInterval).Before(time.Now()) {
+			if myName != "" && time.Since(img.LastKnownUpdate) > s.imageRefreshInterval {
 				limit <- struct{}{}
 				log.Debugf("Refreshing image %q...", myName)
 				go func(myName string, limit chan struct{}) {
