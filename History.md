@@ -1,3 +1,7 @@
+# 1.2.0-rc9 / 2017-07-20
+
+  * Also cleanup untagged (dangling) images automatically
+
 # 1.2.0-rc8 / 2017-07-17
 
   * Fix: If image is not present pull it before starting a container
