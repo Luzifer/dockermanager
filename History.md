@@ -1,3 +1,7 @@
+# 1.2.0-rc11 / 2017-07-20
+
+  * Fix: When pulling a new new image version the old is still tagged
+
 # 1.2.0-rc10 / 2017-07-20
 
   * Don't handle intermediate images
