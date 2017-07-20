@@ -1,3 +1,7 @@
+# 1.2.0-rc10 / 2017-07-20
+
+  * Don't handle intermediate images
+
 # 1.2.0-rc9 / 2017-07-20
 
   * Also cleanup untagged (dangling) images automatically
