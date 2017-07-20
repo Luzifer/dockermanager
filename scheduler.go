@@ -203,6 +203,15 @@ func (s *scheduler) refreshImageInformation(id string, remove bool) error {
 		return nil
 	}
 
+	if !strings.HasPrefix(id, "sha256") {
+		// We have a name, update old association
+		if oldImg := s.getImageByName(id); oldImg != nil {
+			if err := s.refreshImageInformation(oldImg.ID, false); err != nil {
+				return err
+			}
+		}
+	}
+
 	img, err := s.client.InspectImage(id)
 	if err != nil {
 		return fmt.Errorf("Unable to inspect image %q: %s", id, err)
