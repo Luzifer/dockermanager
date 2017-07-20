@@ -167,7 +167,7 @@ func (s *scheduler) unlock(topic string, rw bool) {
 
 func (s *scheduler) collectInitialInformation() error {
 	imgs, err := s.client.ListImages(docker.ListImagesOptions{
-		All: true,
+		All: false, // Hide intermediate images
 	})
 	if err != nil {
 		return fmt.Errorf("Unable to list images: %s", err)
