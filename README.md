@@ -64,6 +64,7 @@ The configuration is written in YAML format and reloaded regularly by the daemon
   - `stop_timeout`: Time in seconds to wait when stopping a deprecated container to be exchanged. (default: 5s)
   - `labels`: Labels to attach to the container
   - `add_cap`: Array of [capabilities](https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities) to add to this container
+  - `depends_on`: Array of container names to start before this one
 
 Example configuration for a jenkins container:
 

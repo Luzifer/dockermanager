@@ -32,6 +32,7 @@ type ContainerConfig struct {
 	StopTimeout     uint              `yaml:"stop_timeout" json:"stoptimes"`
 	Labels          map[string]string `yaml:"labels" json:"labels"`
 	AddCapabilities []string          `yaml:"cap_add" json:"cap_add"`
+	DependsOn       []string          `yaml:"depends_on" json:"depends_on"`
 
 	nextRun *time.Time `hash:"-"`
 }
@@ -146,7 +147,7 @@ func (c ContainerConfig) UpdateAllowedAt(pit time.Time) (bool, error) {
 }
 
 func (c ContainerConfig) GetDependencies() []string {
-	deps := []string{}
+	deps := c.DependsOn
 
 	// Introduce all linked containers as dependencies
 	for _, lnk := range c.Links {
