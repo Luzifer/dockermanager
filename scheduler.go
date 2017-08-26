@@ -526,6 +526,11 @@ func (s *scheduler) stopContainerGraph(name string, isBaseLevel bool) error {
 	cont := s.getContainerByName(name)
 	s.unlock(lockContainers, false)
 
+	if cont == nil {
+		// Container with that name is unknown, ignore it
+		return nil
+	}
+
 	stopTime := uint(math.Max(5, float64(ccfg.StopTimeout)))
 	return s.client.StopContainer(cont.ID, stopTime)
 }
