@@ -1,51 +1,16 @@
-# 1.2.0-rc11 / 2017-07-20
+# 1.2.0 / 2017-08-26
 
+  * Add dependencies through list of containers
   * Fix: When pulling a new new image version the old is still tagged
-
-# 1.2.0-rc10 / 2017-07-20
-
   * Don't handle intermediate images
-
-# 1.2.0-rc9 / 2017-07-20
-
   * Also cleanup untagged (dangling) images automatically
-
-# 1.2.0-rc8 / 2017-07-17
-
-  * Fix: If image is not present pull it before starting a container
-
-# 1.2.0-rc7 / 2017-07-12
-
-  * Fix: There might be no repo tags present
   * Limit concurrent pulls to 10
-
-# 1.2.0-rc6 / 2017-07-09
-
   * Pull multiple images at the same time
   * Ensure all containers depending are stopped before the dependency
-
-# 1.2.0-rc5 / 2017-07-09
-
-  * Fix: Maps need to be initialized
-
-# 1.2.0-rc4 / 2017-07-09
-
   * Split locks into different lock topics
-
-# 1.2.0-rc3 / 2017-07-09
-
   * Add deadlock detection during RC builds
-  * Fix: Stating this once is enough
-  * Do not take private fields in account for hashes
-
-# 1.2.0-rc2 / 2017-07-09
-
-  * Windows is no longer supported by runc
-  * Fix naming of logrus package
+  * Drop Windows support through dependency update
   * Update all the dependencies 🙈
-
-# 1.2.0-rc1 / 2017-07-09
-
   * Complete rewrite of the scheduler logic
 
 # 1.1.0 / 2017-07-02
