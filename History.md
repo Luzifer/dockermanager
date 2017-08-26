@@ -1,3 +1,7 @@
+# 1.2.2 / 2017-08-26
+
+  * Fix: Don't fail on not started dependent containers
+
 # 1.2.1 / 2017-08-26
 
   * Fix: Remove deadlock detection from stable build
