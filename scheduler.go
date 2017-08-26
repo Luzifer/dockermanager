@@ -11,7 +11,6 @@ import (
 	"github.com/Luzifer/dockermanager/config"
 	"github.com/Luzifer/go_helpers/str"
 	docker "github.com/fsouza/go-dockerclient"
-	deadlock "github.com/sasha-s/go-deadlock"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -62,7 +61,7 @@ type scheduler struct {
 	knownImages          map[string]image
 	listener             chan *docker.APIEvents
 
-	locks     map[string]*deadlock.RWMutex
+	locks     map[string]*sync.RWMutex
 	locksLock sync.Mutex
 	pullLock  map[string]bool
 }
@@ -79,7 +78,7 @@ func newScheduler(hostname string, client *docker.Client, authConfig *docker.Aut
 		knownImages:          make(map[string]image),
 		listener:             make(chan *docker.APIEvents, 10),
 
-		locks:    make(map[string]*deadlock.RWMutex),
+		locks:    make(map[string]*sync.RWMutex),
 		pullLock: make(map[string]bool),
 	}
 
@@ -142,7 +141,7 @@ func (s *scheduler) EnableImageCleanup(minAge time.Duration) {
 func (s *scheduler) lock(topic string, rw bool) {
 	if _, ok := s.locks[topic]; !ok {
 		s.locksLock.Lock()
-		s.locks[topic] = new(deadlock.RWMutex)
+		s.locks[topic] = new(sync.RWMutex)
 		s.locksLock.Unlock()
 	}
 
@@ -155,7 +154,7 @@ func (s *scheduler) lock(topic string, rw bool) {
 
 func (s *scheduler) unlock(topic string, rw bool) {
 	if _, ok := s.locks[topic]; !ok {
-		s.locks[topic] = new(deadlock.RWMutex)
+		s.locks[topic] = new(sync.RWMutex)
 	}
 
 	if rw {
