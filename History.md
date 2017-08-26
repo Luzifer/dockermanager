@@ -1,3 +1,7 @@
+# 1.2.1 / 2017-08-26
+
+  * Fix: Remove deadlock detection from stable build
+
 # 1.2.0 / 2017-08-26
 
   * Add dependencies through list of containers
